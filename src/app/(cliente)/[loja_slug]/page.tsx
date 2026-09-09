@@ -1,0 +1,1 @@
+export default function VitrinePage() { return <main className="p-4"><h1>Cardápio da Loja</h1></main>; }

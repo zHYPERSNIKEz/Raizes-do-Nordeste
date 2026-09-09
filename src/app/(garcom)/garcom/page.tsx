@@ -1,0 +1,1 @@
+export default function GarcomPage() { return <main className="p-4"><h1>Mesas</h1></main>; }
