@@ -1,0 +1,13 @@
+# STATUS DO PROJETO - ARTE HAMBURGUERIA
+
+## Onde Paramos (08/Set):
+- Ambiente Next.js configurado com Tailwind V4 e Shadcn/UI (cores personalizadas injetadas no globals.css).
+- Banco de dados Supabase configurado (tabelas criadas, política de segurança e triggers ajustados para lidar com perfis de clientes).
+- Fluxo de Autenticação criado: Cliente consegue se cadastrar, o perfil é gerado automaticamente, e o login redireciona para a página inicial.
+- Tela da Vitrine do Cliente criada e listando produtos reais do banco de dados na página inicial (rota root `/`).
+
+## O que precisamos fazer amanhã (Próximos Passos):
+1. **Cabeçalho Autenticado:** Mostrar "Olá, [Nome do Cliente]" na tela inicial caso ele esteja logado, junto com um botão de "Sair" (Logout).
+2. **Carrinho de Compras:** Fazer o botão "Adicionar" nos produtos funcionar (usar Zustand ou Contexto para guardar os itens) e montar a aba lateral do carrinho.
+3. **Checkout de Pagamento:** Criar a tela de finalização do pedido, onde o cliente pode gerenciar seu endereço (tabela `enderecos`) e efetuar a compra, salvando na tabela `pedidos`.
+4. **Módulo Administrativo:** Iniciar o painel do dono e o sistema de pedidos em tempo real (Painel da Cozinha).
