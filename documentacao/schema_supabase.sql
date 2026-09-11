@@ -30,6 +30,8 @@ CREATE TABLE produtos (
   categoria TEXT NOT NULL, -- Ex: 'Artesanais', 'Smash', 'Bebidas'
   imagem_url TEXT,
   ativo BOOLEAN DEFAULT TRUE,
+  ingredientes_base JSONB DEFAULT '[]'::jsonb, -- Array de strings com ingredientes (para o cliente poder remover)
+  adicionais JSONB DEFAULT '[]'::jsonb, -- Array de objetos com { nome: string, preco: number }
   criado_em TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

@@ -1,13 +1,15 @@
 # STATUS DO PROJETO - ARTE HAMBURGUERIA
 
-## Onde Paramos (08/Set):
-- Ambiente Next.js configurado com Tailwind V4 e Shadcn/UI (cores personalizadas injetadas no globals.css).
-- Banco de dados Supabase configurado (tabelas criadas, política de segurança e triggers ajustados para lidar com perfis de clientes).
-- Fluxo de Autenticação criado: Cliente consegue se cadastrar, o perfil é gerado automaticamente, e o login redireciona para a página inicial.
-- Tela da Vitrine do Cliente criada e listando produtos reais do banco de dados na página inicial (rota root `/`).
+## Onde Paramos (10/Set - Fim do dia):
+- Ambiente Next.js com Tailwind V4 e Shadcn/UI (suporte completo a Tema Claro/Escuro com ThemeToggle).
+- Cabeçalho Autenticado identificando o cliente via Supabase.
+- **Personalização de Produto (estilo Totem McDonald's)** finalizada: Rota `/produto/[id]` permite remover ingredientes e incluir adicionais pagos.
+- **Carrinho de Compras** pronto e integrado (Zustand com suporte inteligente a itens customizados).
+- Tela visual do **Checkout** finalizada (rota `/checkout` protegida para exigir login).
 
 ## O que precisamos fazer amanhã (Próximos Passos):
-1. **Cabeçalho Autenticado:** Mostrar "Olá, [Nome do Cliente]" na tela inicial caso ele esteja logado, junto com um botão de "Sair" (Logout).
-2. **Carrinho de Compras:** Fazer o botão "Adicionar" nos produtos funcionar (usar Zustand ou Contexto para guardar os itens) e montar a aba lateral do carrinho.
-3. **Checkout de Pagamento:** Criar a tela de finalização do pedido, onde o cliente pode gerenciar seu endereço (tabela `enderecos`) e efetuar a compra, salvando na tabela `pedidos`.
-4. **Módulo Administrativo:** Iniciar o painel do dono e o sistema de pedidos em tempo real (Painel da Cozinha).
+1. **Gravação do Checkout:** Conectar o botão "Confirmar Pedido" da tela de checkout para salvar a compra no banco do Supabase (criando registros nas tabelas `pedidos` e `itens_pedido`).
+2. **Módulo Administrativo (Cozinha):** Criar o painel de controle do restaurante e o fluxo kanban da cozinha (Supabase Realtime para tocar aquele sininho quando chega pedido novo).
+
+## Backlog / Ideias Futuras (Anotado):
+- **Importação Mágica de Cardápio com IA:** No painel Admin, permitir o upload de um PDF/Foto do cardápio e usar a API de Inteligência Artificial para ler os dados e cadastrar os produtos automaticamente no banco.

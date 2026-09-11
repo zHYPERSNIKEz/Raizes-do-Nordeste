@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { notFound } from "next/navigation"
+import { AddToCartButton } from "@/components/cliente/AddToCartButton"
 
 // Next.js 15+ async params
 export default async function VitrinePage({ params }: { params: Promise<{ loja_slug: string }> }) {
@@ -57,9 +58,7 @@ export default async function VitrinePage({ params }: { params: Promise<{ loja_s
                   <span className="font-bold text-lg text-slate-900">
                     R$ {Number(produto.preco).toFixed(2).replace('.', ',')}
                   </span>
-                  <button className="bg-primary hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Adicionar
-                  </button>
+                  <AddToCartButton produto={produto} />
                 </div>
               </div>
             </div>

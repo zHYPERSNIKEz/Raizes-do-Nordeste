@@ -1,0 +1,105 @@
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export type AdicionalSelecionado = {
+  nome: string
+  preco: number
+  quantidade: number
+}
+
+export type CartItem = {
+  cartItemId: string // Identificador único na sacola (para diferenciar o mesmo lanche com personalizações diferentes)
+  produtoId: string
+  nome: string
+  precoBase: number
+  precoTotal: number // Base + (Adicionais * qtd)
+  imagem_url?: string
+  quantidade: number
+  removidos: string[]
+  adicionais: AdicionalSelecionado[]
+}
+
+type CartState = {
+  items: CartItem[]
+  addItem: (item: Omit<CartItem, 'cartItemId' | 'precoTotal'>) => void
+  removeItem: (cartItemId: string) => void
+  updateQuantity: (cartItemId: string, quantidade: number) => void
+  clearCart: () => void
+  totalItems: () => number
+  totalPrice: () => number
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      addItem: (newItem) => {
+        set((state) => {
+          // Calcula o preço dos adicionais
+          const adicionaisTotal = newItem.adicionais.reduce((total, add) => total + (add.preco * add.quantidade), 0)
+          const precoTotal = newItem.precoBase + adicionaisTotal
+          
+          // Verifica se já existe um item EXATAMENTE igual (mesmos removidos e adicionais)
+          // Isso é avançado, mas para simplificar o MVP, vamos apenas adicionar como nova linha sempre, 
+          // a menos que não tenha personalização NENHUMA.
+          const temPersonalizacao = newItem.removidos.length > 0 || newItem.adicionais.length > 0
+          
+          if (!temPersonalizacao) {
+            const existingItem = state.items.find(
+              (item) => item.produtoId === newItem.produtoId && item.removidos.length === 0 && item.adicionais.length === 0
+            )
+            
+            if (existingItem) {
+              return {
+                items: state.items.map((item) =>
+                  item.cartItemId === existingItem.cartItemId 
+                    ? { ...item, quantidade: item.quantidade + newItem.quantidade } 
+                    : item
+                ),
+              }
+            }
+          }
+
+          // Adiciona como nova linha
+          return {
+            items: [
+              ...state.items,
+              {
+                ...newItem,
+                cartItemId: crypto.randomUUID(),
+                precoTotal
+              },
+            ],
+          }
+        })
+      },
+      removeItem: (cartItemId) => {
+        set((state) => ({
+          items: state.items.filter((item) => item.cartItemId !== cartItemId),
+        }))
+      },
+      updateQuantity: (cartItemId, quantidade) => {
+        set((state) => {
+          if (quantidade <= 0) {
+            return { items: state.items.filter((item) => item.cartItemId !== cartItemId) }
+          }
+          return {
+            items: state.items.map((item) =>
+              item.cartItemId === cartItemId ? { ...item, quantidade } : item
+            ),
+          }
+        })
+      },
+      clearCart: () => set({ items: [] }),
+      totalItems: () => {
+        return get().items.reduce((total, item) => total + item.quantidade, 0)
+      },
+      totalPrice: () => {
+        return get().items.reduce((total, item) => total + item.precoTotal * item.quantidade, 0)
+      },
+    }),
+    {
+      name: 'arteburgueria-cart-v2', // mudando o nome para resetar o cache antigo e não quebrar a tipagem
+    }
+  )
+)
