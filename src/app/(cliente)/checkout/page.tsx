@@ -10,11 +10,19 @@ export default async function CheckoutPage() {
     redirect('/login?returnUrl=/checkout')
   }
 
-  // Busca dados adicionais se necessário, mas o user do Supabase já tem email e possivelmente nome no metadata
+  // Busca os endereços salvos do perfil
+  const { data: perfil } = await supabase
+    .from('perfis')
+    .select('enderecos_salvos')
+    .eq('id', user.id)
+    .single()
+
+  const enderecosSalvos = perfil?.enderecos_salvos || []
+
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold text-primary mb-6">Finalizar Pedido</h1>
-      <CheckoutForm user={user} />
+      <h1 className="text-3xl font-bold text-slate-800 mb-6">Finalizar Pedido</h1>
+      <CheckoutForm user={user} enderecosSalvos={enderecosSalvos} />
     </main>
   )
 }

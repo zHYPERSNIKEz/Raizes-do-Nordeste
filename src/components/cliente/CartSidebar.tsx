@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react'
 export function CartSidebar() {
   const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCartStore()
   const [mounted, setMounted] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   // Prevent hydration mismatch for zustand persist
   useEffect(() => {
@@ -32,7 +33,7 @@ export function CartSidebar() {
   }
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger className="relative p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 transition-colors rounded-full shadow-sm">
         <ShoppingCart size={24} />
         {totalItems() > 0 && (
@@ -129,11 +130,13 @@ export function CartSidebar() {
                 <span>R$ {totalPrice().toFixed(2).replace('.', ',')}</span>
               </div>
               
-              <Button asChild className="w-full bg-brand hover:bg-orange-700 text-white font-bold h-12 text-lg">
-                <Link href="/checkout">
-                  Finalizar Pedido <ArrowRight size={20} className="ml-2" />
-                </Link>
-              </Button>
+              <Link 
+                href="/checkout"
+                onClick={() => setIsOpen(false)}
+                className="w-full bg-brand hover:bg-orange-700 text-white font-bold h-12 text-lg flex items-center justify-center rounded-lg transition-colors"
+              >
+                Finalizar Pedido <ArrowRight size={20} className="ml-2" />
+              </Link>
             </div>
           </SheetFooter>
         )}

@@ -24,10 +24,10 @@ export function HeaderCliente({ user }: HeaderClienteProps) {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-slate-700 hidden sm:inline-flex items-center gap-2">
+              <Link href="/perfil" className="text-sm font-medium text-slate-700 hover:text-primary cursor-pointer hidden sm:inline-flex items-center gap-2 transition-colors">
                 <User size={16} className="text-slate-400" />
                 Olá, {nome}
-              </span>
+              </Link>
               
               <button 
                 onClick={() => logout()}

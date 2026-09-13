@@ -15,6 +15,8 @@ type ProdutoData = {
   adicionais: { nome: string, preco: number }[]
 }
 
+import { toast } from 'sonner'
+
 export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
@@ -79,7 +81,9 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
     })
 
     // Dá um feedback rápido e volta pra home (Vitrine)
-    alert('Adicionado à sacola!')
+    toast.success('Adicionado à sacola com sucesso!', {
+      description: `${quantidade}x ${produto.nome}`
+    })
     router.push('/')
   }
 
