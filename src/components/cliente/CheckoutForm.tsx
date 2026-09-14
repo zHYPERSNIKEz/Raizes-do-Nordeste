@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { adicionarEndereco } from '@/app/(cliente)/perfil/actions'
+import { criarPedido } from '@/app/(cliente)/checkout/actions'
 
 import { toast } from 'sonner'
 
@@ -109,14 +110,20 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
         formaPagamento,
         endereco: enderecoFinal
       }
-      // TODO: Chamada para Supabase Server Action com o payload e itens
-      console.log('Pedido:', payload, items)
       
-      toast.success('Pedido confirmado!', {
-        description: 'O seu pedido foi enviado para a cozinha.'
-      })
-      clearCart()
-      router.push('/')
+      const res = await criarPedido(payload, items)
+      
+      if (res?.success) {
+        toast.success('Pedido confirmado!', {
+          description: 'O seu pedido foi enviado para a cozinha.'
+        })
+        clearCart()
+        router.push('/')
+      } else {
+        toast.error('Erro ao finalizar', {
+          description: res?.error || 'Tente novamente.'
+        })
+      }
     } catch (error) {
       toast.error('Erro ao finalizar pedido')
     } finally {

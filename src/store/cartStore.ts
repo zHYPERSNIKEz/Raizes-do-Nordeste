@@ -22,6 +22,8 @@ export type CartItem = {
 type CartState = {
   items: CartItem[]
   lastUpdated: number | null
+  mesa_atual: string | null // Para controle do módulo do garçom
+  setMesa: (numero: string | null) => void
   addItem: (item: Omit<CartItem, 'cartItemId' | 'precoTotal'>) => void
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantidade: number) => void
@@ -35,6 +37,14 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       lastUpdated: null,
+      mesa_atual: null,
+      setMesa: (numero) => {
+        const current = get().mesa_atual;
+        if (current !== numero) {
+          // Limpa o carrinho se mudar de mesa
+          set({ mesa_atual: numero, items: [], lastUpdated: Date.now() })
+        }
+      },
       addItem: (newItem) => {
         set((state) => {
           const now = Date.now()
