@@ -18,7 +18,14 @@ export function PerfilForm({ user, perfilDB }: PerfilFormProps) {
   const email = user?.email
   const nome = user?.user_metadata?.nome || perfilDB?.nome || ''
   
-  const [telefone, setTelefone] = useState(perfilDB?.telefone || '')
+  const maskPhone = (val: string) => {
+    const v = val.replace(/\D/g, '')
+    if (v.length <= 2) return v
+    if (v.length <= 7) return `(${v.slice(0, 2)}) ${v.slice(2, 7)}`
+    return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7, 11)}`
+  }
+
+  const [telefone, setTelefone] = useState(maskPhone(perfilDB?.telefone || ''))
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -36,8 +43,8 @@ export function PerfilForm({ user, perfilDB }: PerfilFormProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <form action={handleSubmit} className="space-y-6">
+    <div className="space-y-6 text-slate-900">
+      <form action={handleSubmit} className="space-y-6 text-slate-900">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Nome</label>
@@ -51,7 +58,7 @@ export function PerfilForm({ user, perfilDB }: PerfilFormProps) {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Telefone Principal (WhatsApp)</label>
-          <input type="text" name="telefone" value={telefone} onChange={e => setTelefone(e.target.value)} className="w-full md:w-1/2 p-2 border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
+          <input type="text" name="telefone" value={telefone} onChange={e => setTelefone(maskPhone(e.target.value))} className="w-full md:w-1/2 p-2 border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
         </div>
 
         <div className="border-t border-slate-200 pt-6">

@@ -3,6 +3,8 @@ import { AddToCartButton } from "@/components/cliente/AddToCartButton"
 export default async function VitrinePage() {
   const supabase = await createClient()
 
+  const { data: { user } } = await supabase.auth.getUser()
+
   // Como o sistema é de uma loja só, buscamos todos os produtos ativos diretamente
   const { data: produtos } = await supabase
     .from('produtos')
@@ -13,7 +15,9 @@ export default async function VitrinePage() {
     <main className="min-h-screen bg-slate-50 p-4 md:p-8">
       <header className="mb-8 text-center max-w-4xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-bold text-brand mb-2">Arte Hamburgueria</h1>
-        <p className="text-slate-500">Seja bem-vindo(a)! Faça login para pedir.</p>
+        <p className="text-slate-500">
+          {user ? 'Seja bem-vindo(a)! Faça seu pedido abaixo.' : 'Seja bem-vindo(a)! Faça login para pedir.'}
+        </p>
       </header>
 
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

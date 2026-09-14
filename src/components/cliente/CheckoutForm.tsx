@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useCartStore } from '@/store/cartStore'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { adicionarEndereco } from '@/app/(cliente)/perfil/actions'
 
 import { toast } from 'sonner'
 
@@ -18,9 +19,18 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
   const [formaPagamento, setFormaPagamento] = useState('PIX')
   
   // Endereços
+  const [localEnderecos, setLocalEnderecos] = useState<any[]>(enderecosSalvos)
   const [enderecoSelecionadoId, setEnderecoSelecionadoId] = useState<string>(
-    enderecosSalvos.length > 0 ? enderecosSalvos[0].id : 'NOVO'
+    localEnderecos.length > 0 ? enderecosSalvos[0].id : 'NOVO'
   )
+  const [titulo, setTitulo] = useState('Novo Endereço')
+  const maskPhone = (val: string) => {
+    const v = val.replace(/\D/g, '')
+    if (v.length <= 2) return v
+    if (v.length <= 7) return `(${v.slice(0, 2)}) ${v.slice(2, 7)}`
+    return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7, 11)}`
+  }
+
   const [telefone, setTelefone] = useState('')
   const [rua, setRua] = useState('')
   const [numero, setNumero] = useState('')
@@ -28,6 +38,27 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
   const [complemento, setComplemento] = useState('')
   
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSavingAddress, setIsSavingAddress] = useState(false)
+
+  const handleSalvarEndereco = async () => {
+    if (!rua || !numero || !bairro || !telefone) {
+      toast.error('Preencha os campos obrigatórios')
+      return
+    }
+    setIsSavingAddress(true)
+    const novoId = crypto.randomUUID()
+    const novoEnd = { id: novoId, titulo, rua, numero, bairro, complemento, telefone }
+    
+    const res = await adicionarEndereco(novoEnd)
+    if (res?.success) {
+      setLocalEnderecos([...localEnderecos, novoEnd])
+      setEnderecoSelecionadoId(novoId)
+      toast.success('Endereço salvo no seu perfil!')
+    } else {
+      toast.error('Erro ao salvar endereço.')
+    }
+    setIsSavingAddress(false)
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -61,7 +92,7 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
         }
         enderecoFinal = { rua, numero, bairro, complemento, telefone }
       } else {
-        const endSalvo = enderecosSalvos.find(e => e.id === enderecoSelecionadoId)
+        const endSalvo = localEnderecos.find(e => e.id === enderecoSelecionadoId)
         if (!endSalvo) {
           toast.error('Endereço inválido')
           setIsSubmitting(false)
@@ -96,7 +127,7 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div>
-        <form id="checkout-form" onSubmit={handleFinalizar} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+        <form id="checkout-form" onSubmit={handleFinalizar} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 text-slate-900">
           <div>
             <h3 className="font-bold text-lg text-slate-800 mb-4">Dados do Pedido</h3>
             
@@ -117,9 +148,9 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
                 <div className="space-y-4">
                   <h4 className="font-bold text-slate-800 border-b border-slate-100 pb-2">Onde vamos entregar?</h4>
                   
-                  {enderecosSalvos.length > 0 && (
+                  {localEnderecos.length > 0 && (
                     <div className="grid grid-cols-1 gap-3">
-                      {enderecosSalvos.map(end => (
+                      {localEnderecos.map(end => (
                         <div 
                           key={end.id}
                           onClick={() => setEnderecoSelecionadoId(end.id)}
@@ -151,11 +182,17 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
                     </div>
                   )}
 
-                  {(enderecoSelecionadoId === 'NOVO' || enderecosSalvos.length === 0) && (
+                  {(enderecoSelecionadoId === 'NOVO' || localEnderecos.length === 0) && (
                     <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-4 animate-in fade-in slide-in-from-top-2">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">Telefone (WhatsApp) *</label>
-                        <input type="text" required={enderecoSelecionadoId === 'NOVO'} value={telefone} onChange={(e) => setTelefone(e.target.value)} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-700 mb-1">Nome do Local</label>
+                          <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="Casa, Trabalho..." />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-700 mb-1">Telefone (WhatsApp) *</label>
+                          <input type="text" required={enderecoSelecionadoId === 'NOVO'} value={telefone} onChange={(e) => setTelefone(maskPhone(e.target.value))} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-3">
@@ -178,6 +215,19 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
                           <label className="block text-xs font-medium text-slate-700 mb-1">Complemento</label>
                           <input type="text" value={complemento} onChange={(e) => setComplemento(e.target.value)} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="Ap, Casa 2..." />
                         </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-200">
+                        <Button 
+                          type="button" 
+                          onClick={handleSalvarEndereco} 
+                          disabled={isSavingAddress}
+                          variant="outline"
+                          className="w-full font-bold border-brand text-brand hover:bg-orange-50"
+                        >
+                          {isSavingAddress ? 'Salvando...' : 'Salvar Endereço no Meu Perfil'}
+                        </Button>
+                        <p className="text-xs text-center text-slate-500 mt-2">Você também pode apenas preencher e Confirmar o Pedido, mas salvar agiliza a próxima compra.</p>
                       </div>
                     </div>
                   )}
@@ -242,7 +292,7 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
             type="submit" 
             form="checkout-form"
             disabled={isSubmitting}
-            className="w-full bg-brand hover:bg-orange-700 h-14 text-lg font-bold text-white rounded-xl shadow-lg shadow-orange-500/20"
+            className="w-full bg-primary hover:bg-orange-700 h-14 text-lg font-bold text-white rounded-xl shadow-lg shadow-orange-500/20"
           >
             {isSubmitting ? 'Processando...' : 'Confirmar Pedido'}
           </Button>

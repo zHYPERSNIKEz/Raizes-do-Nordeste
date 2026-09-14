@@ -1,6 +1,6 @@
 'use client'
 
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, X } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export function CartSidebar() {
-  const { items, removeItem, updateQuantity, totalItems, totalPrice } = useCartStore()
+  const { items, removeItem, updateQuantity, clearCart, totalItems, totalPrice } = useCartStore()
   const [mounted, setMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -23,6 +23,27 @@ export function CartSidebar() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Limpa o carrinho após 10 minutos de inatividade
+  useEffect(() => {
+    if (!mounted) return
+
+    const checkInactivity = () => {
+      const { lastUpdated, clearCart, items } = useCartStore.getState()
+      if (items.length > 0 && lastUpdated) {
+        const dezMinutosEmMs = 10 * 60 * 1000
+        if (Date.now() - lastUpdated > dezMinutosEmMs) {
+          clearCart()
+        }
+      }
+    }
+
+    // Checa ao montar e depois a cada minuto
+    checkInactivity()
+    const interval = setInterval(checkInactivity, 60000)
+
+    return () => clearInterval(interval)
+  }, [mounted])
 
   if (!mounted) {
     return (
@@ -44,10 +65,21 @@ export function CartSidebar() {
       </SheetTrigger>
       
       <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-white dark:bg-slate-950 border-l-slate-200 dark:border-l-slate-800">
-        <SheetHeader>
-          <SheetTitle className="text-left text-xl font-bold text-slate-800 dark:text-slate-100 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <SheetHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
+          <SheetTitle className="text-left text-xl font-bold text-slate-800 dark:text-slate-100 mt-2">
             Seu Pedido
           </SheetTitle>
+          {items.length > 0 && (
+            <div className="flex justify-start mt-2">
+              <button
+                onClick={clearCart}
+                className="text-sm flex items-center gap-1.5 text-red-500 hover:text-red-700 transition-colors px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-md"
+              >
+                <Trash2 size={15} />
+                Esvaziar carrinho
+              </button>
+            </div>
+          )}
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-4">

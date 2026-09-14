@@ -21,6 +21,7 @@ export type CartItem = {
 
 type CartState = {
   items: CartItem[]
+  lastUpdated: number | null
   addItem: (item: Omit<CartItem, 'cartItemId' | 'precoTotal'>) => void
   removeItem: (cartItemId: string) => void
   updateQuantity: (cartItemId: string, quantidade: number) => void
@@ -33,8 +34,10 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      lastUpdated: null,
       addItem: (newItem) => {
         set((state) => {
+          const now = Date.now()
           // Calcula o preço dos adicionais
           const adicionaisTotal = newItem.adicionais.reduce((total, add) => total + (add.preco * add.quantidade), 0)
           const precoTotal = newItem.precoBase + adicionaisTotal
@@ -51,6 +54,7 @@ export const useCartStore = create<CartState>()(
             
             if (existingItem) {
               return {
+                lastUpdated: now,
                 items: state.items.map((item) =>
                   item.cartItemId === existingItem.cartItemId 
                     ? { ...item, quantidade: item.quantidade + newItem.quantidade } 
@@ -62,6 +66,7 @@ export const useCartStore = create<CartState>()(
 
           // Adiciona como nova linha
           return {
+            lastUpdated: now,
             items: [
               ...state.items,
               {
@@ -75,22 +80,24 @@ export const useCartStore = create<CartState>()(
       },
       removeItem: (cartItemId) => {
         set((state) => ({
+          lastUpdated: Date.now(),
           items: state.items.filter((item) => item.cartItemId !== cartItemId),
         }))
       },
       updateQuantity: (cartItemId, quantidade) => {
         set((state) => {
           if (quantidade <= 0) {
-            return { items: state.items.filter((item) => item.cartItemId !== cartItemId) }
+            return { lastUpdated: Date.now(), items: state.items.filter((item) => item.cartItemId !== cartItemId) }
           }
           return {
+            lastUpdated: Date.now(),
             items: state.items.map((item) =>
               item.cartItemId === cartItemId ? { ...item, quantidade } : item
             ),
           }
         })
       },
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], lastUpdated: null }),
       totalItems: () => {
         return get().items.reduce((total, item) => total + item.quantidade, 0)
       },
