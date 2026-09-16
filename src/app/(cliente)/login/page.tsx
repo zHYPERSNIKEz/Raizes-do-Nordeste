@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { login, signup } from './actions'
@@ -12,7 +12,6 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
     
-    // Chama a função do servidor dependendo do modo (login ou cadastro)
     const result = isLogin ? await login(formData) : await signup(formData)
     
     if (result?.error) {
@@ -22,58 +21,58 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+    <main className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-card rounded-[2rem] shadow-xl border border-border p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-brand">
+          <h1 className="text-4xl font-display text-primary uppercase tracking-wide">
             {isLogin ? 'Entrar' : 'Criar Conta'}
           </h1>
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-muted-foreground mt-2">
             {isLogin 
               ? 'Faça login para pedir seus hambúrgueres favoritos.' 
               : 'Cadastre-se rapidamente para fazer seu pedido.'}
           </p>
         </div>
 
-        <form action={handleSubmit} className="flex flex-col gap-4">
+        <form action={handleSubmit} className="flex flex-col gap-5">
           {!isLogin && (
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-700">Nome completo</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-foreground">Nome completo</label>
               <input 
                 type="text" 
                 name="nome" 
                 required 
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="px-4 py-3 bg-background text-foreground border-2 border-border rounded-xl focus:outline-none focus:border-primary focus:ring-0 transition-colors"
                 placeholder="Seu nome"
               />
             </div>
           )}
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">E-mail</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-foreground">E-mail</label>
             <input 
               type="email" 
               name="email" 
               required 
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="px-4 py-3 bg-background text-foreground border-2 border-border rounded-xl focus:outline-none focus:border-primary focus:ring-0 transition-colors"
               placeholder="seu@email.com"
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Senha</label>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-foreground">Senha</label>
             <input 
               type="password" 
               name="password" 
               required 
               minLength={6}
-              className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="px-4 py-3 bg-background text-foreground border-2 border-border rounded-xl focus:outline-none focus:border-primary focus:ring-0 transition-colors"
               placeholder="Mínimo 6 caracteres"
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+            <div className="p-4 bg-destructive/10 text-destructive text-sm font-bold rounded-xl border-2 border-destructive/20 text-center">
               {error}
             </div>
           )}
@@ -81,20 +80,20 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className="mt-2 w-full bg-primary hover:bg-orange-700 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+            className="mt-4 w-full bg-primary hover:scale-[1.02] active:scale-[0.98] text-primary-foreground font-display text-xl uppercase py-4 rounded-full transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-md"
           >
             {loading ? 'Aguarde...' : (isLogin ? 'Entrar' : 'Cadastrar')}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-slate-600">
+        <div className="mt-8 text-center text-sm text-muted-foreground font-medium">
           {isLogin ? 'Ainda não tem conta?' : 'Já tem uma conta?'}
           <button 
             onClick={() => {
               setIsLogin(!isLogin)
               setError(null)
             }}
-            className="ml-1 text-primary font-medium hover:underline"
+            className="ml-2 text-primary font-bold hover:underline"
           >
             {isLogin ? 'Cadastre-se' : 'Faça login'}
           </button>

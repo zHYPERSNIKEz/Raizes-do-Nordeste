@@ -54,10 +54,12 @@ export async function criarPedido(payload: any, items: any[]) {
     .from('pedidos')
     .insert({
       loja_id,
+      user_id: user.id,
       cliente_nome: user.user_metadata?.nome || user.email,
       telefone: payload.endereco?.telefone || null,
       tipo_consumo: payload.tipoConsumo,
       endereco: payload.endereco, // Precisaremos adicionar essa coluna JSONB no Supabase
+      endereco: payload.endereco, 
       status: 'NA_FILA',
       total,
       forma_pagamento: payload.formaPagamento,
