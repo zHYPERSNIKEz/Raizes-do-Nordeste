@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# 🍔 Arte Burgueria - Sistema de Pedidos e Delivery
 
-## Getting Started
+Plataforma completa de delivery e gestão de pedidos criada para a **Arte Burgueria**, focada em alta conversão visual, acompanhamento em tempo real e facilidade operacional.
 
-First, run the development server:
+## 🚀 Tecnologias Utilizadas
+- **Framework:** Next.js (App Router, Server Actions, Server Components)
+- **Estilização:** Tailwind CSS + shadcn/ui
+- **Estado Global:** Zustand (para o carrinho de compras)
+- **Banco de Dados & Backend:** Supabase (PostgreSQL, Row Level Security, Auth)
+- **Tempo Real:** Supabase Realtime (para rastreamento de pedidos)
+- **Ícones:** Lucide React
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 📦 Estrutura do Sistema
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+O sistema é dividido em grandes módulos operacionais:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Visão do Cliente (`/`)
+- **Vitrine:** Cardápio dinâmico buscando produtos ativos do Supabase. Identidade visual ("Pop") com cores vibrantes (Azul Marinho e Laranja).
+- **Carrinho e Checkout:** O cliente pode montar o pedido, adicionar observações, cadastrar endereços de entrega e finalizar a compra.
+- **Histórico e Perfil:** Telas separadas (`/pedidos` e `/perfil`) para fácil navegação e gestão de dados.
+- **Acompanhamento em Tempo Real:** Tela `/pedido/[id]` onde o cliente observa a barra de progresso do pedido avançar via WebSockets (Supabase Realtime) quando a cozinha atualiza o status.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Visão da Cozinha (`/admin/cozinha`)
+- **Kanban de Produção:** Os cozinheiros recebem novos pedidos automaticamente e podem movê-los pelos estágios (`Na Fila` > `Preparando` > `Pronto`).
 
-## Learn More
+### 3. Visão do Caixa / Gestão (`/admin`)
+- **Controle de Cardápio:** Adicionar, inativar e alterar preços dos produtos.
+- **Controle de Lojas:** Definir taxa de entrega e abrir/fechar a loja.
+- **Gestão de Pedidos:** Acompanhamento geral de todos os pedidos finalizados, despachados ou em andamento.
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Configuração Inicial (Supabase)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para o sistema funcionar corretamente, é obrigatório rodar os scripts SQL no Supabase que criam a estrutura, habilitam as notificações e configuram as políticas de RLS.
+Entre os requisitos fundamentais:
+- Tabela `pedidos` (com RLS ativado para `INSERT` via auth e checagem de status contendo `NA_FILA`).
+- Tabela `itens_pedido` (com RLS condicionado ao vínculo do pedido).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏃 Como Rodar o Projeto
 
-## Deploy on Vercel
+1. Clone o repositório.
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Crie um arquivo `.env.local` na raiz e preencha as variáveis do Supabase:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=sua_url_aqui
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_key_aqui
+   ```
+4. Rode o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+5. Acesse `http://localhost:3000` no navegador.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

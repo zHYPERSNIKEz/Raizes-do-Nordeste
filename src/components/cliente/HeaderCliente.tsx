@@ -1,7 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, LogOut, User } from 'lucide-react'
+import { LogOut, User, ReceiptText } from 'lucide-react'
 import { logout } from '@/app/(cliente)/login/actions'
 import { CartSidebar } from '@/components/cliente/CartSidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -14,46 +14,57 @@ export function HeaderCliente({ user }: HeaderClienteProps) {
   const nome = user?.user_metadata?.nome || user?.email?.split('@')[0] || 'Cliente'
 
   return (
-    <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors">
-      <div className="max-w-4xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl text-brand flex items-center gap-2">
-          {/* Pode adicionar uma logo aqui futuramente */}
-          🍔 Arte Hamburgueria
+    <header className="bg-background border-b border-border sticky top-0 z-50 transition-colors shadow-sm">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+        <Link href="/" className="font-display text-2xl md:text-3xl text-primary flex items-center tracking-wide uppercase hover:scale-105 transition-transform">
+          Arte Burgueria
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-6">
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link href="/perfil" className="text-sm font-medium text-slate-700 hover:text-primary cursor-pointer hidden sm:inline-flex items-center gap-2 transition-colors">
-                <User size={16} className="text-slate-400" />
-                Olá, {nome}
+            <div className="flex items-center gap-2 md:gap-4">
+              
+              {/* Botão de Meus Pedidos */}
+              <Link 
+                href="/pedidos" 
+                className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary-foreground bg-secondary hover:bg-primary px-3 md:px-5 py-2 md:py-2.5 rounded-full transition-all uppercase tracking-wider shadow-sm"
+              >
+                <ReceiptText size={18} className="hidden sm:block" />
+                <span className="text-xs md:text-sm">Meus Pedidos</span>
+              </Link>
+              
+              {/* Ícone de Perfil */}
+              <Link 
+                href="/perfil" 
+                className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary hover:scale-110 transition-transform" 
+                title="Meu Perfil"
+              >
+                <User size={20} />
               </Link>
               
               <button 
                 onClick={() => logout()}
-                className="text-sm text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                 title="Sair da conta"
               >
                 <LogOut size={18} />
-                <span className="hidden sm:inline">Sair</span>
               </button>
             </div>
           ) : (
             <Link 
               href="/login" 
-              className="text-sm font-bold bg-primary hover:bg-orange-700 text-white px-5 py-2 rounded-full transition-colors shadow-sm"
+              className="text-sm font-bold bg-primary hover:scale-105 text-primary-foreground px-6 py-2.5 rounded-full transition-transform shadow-md uppercase tracking-wider"
             >
-              Entrar / Cadastrar
+              Entrar
             </Link>
           )}
 
-          <div className="h-6 w-px bg-slate-200 mx-1"></div>
+          <div className="h-8 w-px bg-border mx-1"></div>
           
           <ThemeToggle />
           <CartSidebar />
         </div>
       </div>
     </header>
-
   )
 }

@@ -71,6 +71,7 @@ export async function criarPedido(payload: any, items: any[]) {
   if (pedidoError || !pedido) {
     console.error('Erro ao criar pedido:', pedidoError)
     return { success: false, error: 'Erro ao criar pedido' }
+    return { success: false, error: `Erro interno: ${pedidoError?.message || 'Desconhecido'}` }
   }
 
   // 3. Criar Itens do Pedido
@@ -103,6 +104,7 @@ export async function criarPedido(payload: any, items: any[]) {
     console.error('Erro ao inserir itens:', itensError)
     // Em um sistema real poderíamos fazer rollback do pedido aqui (deletar o pedido criado)
     return { success: false, error: 'Erro ao processar itens do pedido' }
+    return { success: false, error: `Erro itens: ${itensError.message}` }
   }
 
   return { success: true, pedidoId: pedido.id }
