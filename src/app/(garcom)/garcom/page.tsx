@@ -57,7 +57,7 @@ export default async function GarcomDashboard() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Painel do Salão</h1>
-          <p className="text-slate-500">Olá, {perfil.nome}. Selecione uma mesa para atender.</p>
+          <p className="text-slate-500">Olá, {perfil?.nome}. Selecione uma mesa para atender.</p>
         </div>
       </div>
 

@@ -12,7 +12,7 @@ import { toast } from 'sonner'
 import { MapPin } from 'lucide-react'
 import Link from 'next/link'
 
-export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, enderecosSalvos?: any[] }) {
+export function CheckoutForm({ user, enderecosSalvos = [], taxaEntrega = 0, lojaAberta = true }: { user: any, enderecosSalvos?: any[], taxaEntrega?: number, lojaAberta?: boolean }) {
   const { items, totalPrice, clearCart } = useCartStore()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -112,13 +112,12 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
       }
       
       const res = await criarPedido(payload, items)
-      
       if (res?.success) {
-        toast.success('Pedido confirmado!', {
+        toast.success('Pedido Realizado!', {
           description: 'O seu pedido foi enviado para a cozinha.'
         })
         clearCart()
-        router.push('/')
+        router.push(`/pedido/${res.pedidoId}`)
       } else {
         toast.error('Erro ao finalizar', {
           description: res?.error || 'Tente novamente.'
@@ -286,11 +285,17 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
           </div>
           <div className="flex justify-between items-center text-slate-600 mb-4">
             <span>Taxa de Entrega</span>
-            <span className="text-green-600 font-bold">Grátis</span>
+            {tipoConsumo === 'DELIVERY' ? (
+              <span className="font-bold">
+                {taxaEntrega > 0 ? `R$ ${taxaEntrega.toFixed(2).replace('.', ',')}` : <span className="text-emerald-600">Grátis</span>}
+              </span>
+            ) : (
+              <span className="text-slate-400">---</span>
+            )}
           </div>
           <div className="flex justify-between items-center font-black text-2xl text-slate-800">
             <span>Total</span>
-            <span className="text-brand">R$ {totalPrice().toFixed(2).replace('.', ',')}</span>
+            <span className="text-brand">R$ {(totalPrice() + (tipoConsumo === 'DELIVERY' ? taxaEntrega : 0)).toFixed(2).replace('.', ',')}</span>
           </div>
         </div>
         
@@ -298,7 +303,7 @@ export function CheckoutForm({ user, enderecosSalvos = [] }: { user: any, endere
           <Button 
             type="submit" 
             form="checkout-form"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !lojaAberta}
             className="w-full bg-primary hover:bg-orange-700 h-14 text-lg font-bold text-white rounded-xl shadow-lg shadow-orange-500/20"
           >
             {isSubmitting ? 'Processando...' : 'Confirmar Pedido'}

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ChefHat, Package, LogOut } from 'lucide-react'
+import { LayoutDashboard, ChefHat, Package, LogOut, ClipboardList, Users, Settings, Wallet } from 'lucide-react'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -42,8 +42,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Link href="/admin/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
                 <LayoutDashboard size={20} /> Dashboard
               </Link>
+              <Link href="/admin/caixa" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <Wallet size={20} /> Fechamento de Caixa
+              </Link>
+              <Link href="/admin/pedidos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <ClipboardList size={20} /> Pedidos
+              </Link>
               <Link href="/admin/produtos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
                 <Package size={20} /> Produtos
+              </Link>
+              <Link href="/admin/usuarios" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <Users size={20} /> Equipe / Usuários
+              </Link>
+              <Link href="/admin/configuracoes" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <Settings size={20} /> Configurações
               </Link>
             </>
           )}

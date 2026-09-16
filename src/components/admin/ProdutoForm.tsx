@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { salvarProduto } from '@/app/(admin)/admin/produtos/actions'
-import { Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, ImagePlus, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import imageCompression from 'browser-image-compression'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 export function ProdutoForm({ produto }: { produto?: any }) {
   const [ingredientes, setIngredientes] = useState<string[]>(produto?.ingredientes_base || [])
@@ -13,6 +16,63 @@ export function ProdutoForm({ produto }: { produto?: any }) {
   const [novoIngrediente, setNovoIngrediente] = useState('')
   const [novoAddNome, setNovoAddNome] = useState('')
   const [novoAddPreco, setNovoAddPreco] = useState('')
+
+  const [imagemUrl, setImagemUrl] = useState(produto?.imagem_url || '')
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const supabase = createClient()
+
+  const handleUploadImagem = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      // 1. Comprimir imagem e converter para WebP
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        fileType: 'image/webp'
+      }
+      
+      const compressedFile = await imageCompression(file, options)
+      
+      // 2. Fazer upload para o Supabase Storage (bucket 'produtos')
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
+      const { data, error } = await supabase.storage
+        .from('produtos')
+        .upload(fileName, compressedFile, {
+          contentType: 'image/webp',
+          upsert: false
+        })
+
+      if (error) {
+        if (error.message.includes('Bucket not found')) {
+          toast.error('O bucket "produtos" não existe no Supabase Storage. Crie-o como público primeiro.')
+        } else {
+          throw error
+        }
+        return
+      }
+
+      // 3. Pegar a URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('produtos')
+        .getPublicUrl(data.path)
+
+      setImagemUrl(publicUrl)
+      toast.success('Imagem enviada com sucesso!')
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Erro ao enviar imagem: ' + error.message)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
 
   const handleAddIngrediente = () => {
     if (novoIngrediente.trim()) {
@@ -33,7 +93,7 @@ export function ProdutoForm({ produto }: { produto?: any }) {
   }
 
   return (
-    <form action={salvarProduto} className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+    <form action={async (formData) => { await salvarProduto(formData) }} className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
       <input type="hidden" name="id" value={produto?.id || ''} />
       <input type="hidden" name="ingredientes_base" value={JSON.stringify(ingredientes)} />
       <input type="hidden" name="adicionais" value={JSON.stringify(adicionais)} />
@@ -90,14 +150,53 @@ export function ProdutoForm({ produto }: { produto?: any }) {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">URL da Imagem</label>
-            <input 
-              type="url" 
-              name="imagem_url"
-              defaultValue={produto?.imagem_url}
-              placeholder="https://..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand" 
-            />
+            <label className="block text-sm font-medium text-slate-400 mb-2">Imagem do Produto</label>
+            <input type="hidden" name="imagem_url" value={imagemUrl} />
+            
+            <div className="flex items-center gap-4">
+              {imagemUrl ? (
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-700 shrink-0">
+                  <img src={imagemUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <button 
+                    type="button" 
+                    onClick={() => setImagemUrl('')} 
+                    className="absolute top-1 right-1 p-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-lg border border-dashed border-slate-700 flex items-center justify-center shrink-0 bg-slate-950/50">
+                  <ImagePlus className="text-slate-500" size={24} />
+                </div>
+              )}
+
+              <div className="flex-1">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  ref={fileInputRef}
+                  onChange={handleUploadImagem}
+                  className="hidden" 
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-full md:w-auto bg-slate-950 border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                >
+                  {isUploading ? (
+                    <><Loader2 size={16} className="animate-spin mr-2" /> Comprimindo e Enviando...</>
+                  ) : (
+                    <><ImagePlus size={16} className="mr-2" /> Escolher Foto</>
+                  )}
+                </Button>
+                <p className="text-xs text-slate-500 mt-2">
+                  A imagem será comprimida para economizar dados e convertida para o formato rápido (.webp).
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 mt-4">

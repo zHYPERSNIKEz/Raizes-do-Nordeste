@@ -28,8 +28,26 @@ export async function criarPedido(payload: any, items: any[]) {
 
   const loja_id = produto.loja_id
   
+  // 1.5 Verificar se a loja está aberta e pegar a taxa de entrega
+  const { data: loja } = await supabase
+    .from('lojas')
+    .select('aberta, taxa_entrega')
+    .eq('id', loja_id)
+    .single()
+
+  // Se a coluna 'aberta' não existir no banco ainda, assumimos que está aberta (para não quebrar sistemas antigos)
+  if (loja && loja.aberta === false) {
+    return { success: false, error: 'Desculpe, a loja está fechada no momento.' }
+  }
+
+  const taxaEntrega = loja?.taxa_entrega ? Number(loja.taxa_entrega) : 0
+  
   // Calcular o total no backend por segurança
-  const total = items.reduce((acc, item) => acc + (item.precoTotal * item.quantidade), 0)
+  let total = items.reduce((acc, item) => acc + (item.precoTotal * item.quantidade), 0)
+  
+  if (payload.tipoConsumo === 'DELIVERY') {
+    total += taxaEntrega
+  }
 
   // 2. Criar Pedido
   const { data: pedido, error: pedidoError } = await supabase

@@ -54,7 +54,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
               .select('quantidade, observacao, produtos(nome)')
               .eq('pedido_id', novoPedido.id)
 
-            novoPedido.itens_pedido = itens as ItemPedido[] || []
+            novoPedido.itens_pedido = (itens as unknown as ItemPedido[]) || []
             
             setPedidos((prev) => [...prev, novoPedido])
             
