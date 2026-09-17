@@ -5,6 +5,8 @@ import { LogOut, User as UserIcon, ShieldAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { CartSidebar } from '@/components/cliente/CartSidebar'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 type HeaderClienteProps = {
   user: any
@@ -24,7 +26,6 @@ export function HeaderCliente({ user, cargo = 'CLIENTE' }: HeaderClienteProps) {
 
   const isStaff = cargo !== 'CLIENTE'
   
-  // Decide a rota do painel baseado no cargo
   const getPanelRoute = () => {
     if (cargo === 'GARCOM') return '/garcom'
     if (cargo === 'COZINHA') return '/admin/cozinha'
@@ -35,13 +36,11 @@ export function HeaderCliente({ user, cargo = 'CLIENTE' }: HeaderClienteProps) {
     <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         
-        {/* Logo */}
-        <Link href="/" className="font-black text-2xl tracking-tighter text-brand">
+        <Link href="/" className="font-black text-2xl tracking-tighter text-brand hover:scale-105 transition-transform">
           ARTE<span className="text-white font-medium">.</span>
         </Link>
 
-        {/* Auth / Navegação */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           {user ? (
             <div className="flex items-center gap-2 md:gap-4">
               {isStaff ? (
@@ -83,11 +82,16 @@ export function HeaderCliente({ user, cargo = 'CLIENTE' }: HeaderClienteProps) {
           ) : (
             <Link 
               href="/login" 
-              className="text-sm font-bold bg-brand hover:bg-orange-600 text-white px-6 py-2.5 rounded-full transition-colors"
+              className="text-sm font-bold bg-brand hover:bg-orange-600 text-white px-5 py-2 md:px-6 md:py-2.5 rounded-full transition-colors"
             >
               Entrar
             </Link>
           )}
+
+          <div className="h-8 w-px bg-slate-700 mx-1 md:mx-2 hidden sm:block"></div>
+          
+          <ThemeToggle />
+          <CartSidebar />
         </div>
       </div>
     </header>
