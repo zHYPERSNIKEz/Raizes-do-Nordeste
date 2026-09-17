@@ -25,7 +25,7 @@ export default async function ClienteLayout({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
-      <HeaderCliente role={role} />
+      <HeaderCliente user={user} cargo={role} />
       <div className="flex-1">
         {children}
       </div>

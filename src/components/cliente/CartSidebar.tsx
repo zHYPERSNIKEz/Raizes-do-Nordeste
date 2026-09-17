@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 export function CartSidebar() {
   const [open, setOpen] = useState(false)
   const router = useRouter()
-  const { items, removeItem, updateQuantity, getTotal } = useCartStore()
+  const { items, removeItem, updateQuantity, totalPrice } = useCartStore()
 
   const handleCheckout = () => {
     setOpen(false)
@@ -55,7 +55,7 @@ export function CartSidebar() {
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="flex gap-4 border-b border-border pb-4">
+              <div key={item.cartItemId} className="flex gap-4 border-b border-border pb-4">
                 <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center overflow-hidden shrink-0 border border-border">
                   {item.imagem_url ? (
                     <img src={item.imagem_url} alt={item.nome} className="w-full h-full object-cover" />
@@ -68,7 +68,7 @@ export function CartSidebar() {
                   <div className="flex justify-between items-start">
                     <h4 className="font-bold text-foreground text-sm leading-tight pr-2">{item.nome}</h4>
                     <button 
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.cartItemId)}
                       className="text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <Trash2 size={16} />
@@ -92,14 +92,14 @@ export function CartSidebar() {
                   <div className="mt-auto pt-2 flex items-center justify-between">
                     <div className="flex items-center bg-background rounded-lg border border-border">
                       <button 
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantidade - 1))}
+                        onClick={() => updateQuantity(item.cartItemId, Math.max(1, item.quantidade - 1))}
                         className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="w-6 text-center text-sm font-bold text-foreground">{item.quantidade}</span>
                       <button 
-                        onClick={() => updateQuantity(item.id, item.quantidade + 1)}
+                        onClick={() => updateQuantity(item.cartItemId, item.quantidade + 1)}
                         className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
                       >
                         <Plus size={14} />
@@ -120,7 +120,7 @@ export function CartSidebar() {
             <div className="flex justify-between items-center mb-4">
               <span className="text-muted-foreground font-medium">Total</span>
               <span className="text-2xl font-black text-brand">
-                R$ {getTotal().toFixed(2).replace('.', ',')}
+                R$ {totalPrice().toFixed(2).replace('.', ',')}
               </span>
             </div>
             
