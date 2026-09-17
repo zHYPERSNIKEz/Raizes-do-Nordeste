@@ -11,7 +11,6 @@ export default async function MeusPedidosPage() {
     redirect('/login?returnUrl=/pedidos')
   }
 
-  // A política de RLS filtra os pedidos automaticamente pelo user_id
   const { data: pedidos } = await supabase
     .from('pedidos')
     .select('id, status, criado_em, total, tipo_consumo')
@@ -19,17 +18,16 @@ export default async function MeusPedidosPage() {
     .order('criado_em', { ascending: false })
     .limit(20)
 
-  // Função para definir a cor e ícone baseado no status
   const getStatusDisplay = (status: string) => {
     switch(status) {
-      case 'NA_FILA': return { color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10 border-amber-200', icon: Clock, label: 'Na Fila' }
-      case 'PREPARANDO': return { color: 'text-blue-500 bg-blue-50 dark:bg-blue-500/10 border-blue-200', icon: Clock, label: 'Preparando' }
-      case 'PRONTO': return { color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200', icon: PackageCheck, label: 'Pronto para Retirada' }
-      case 'DESPACHADO': return { color: 'text-purple-500 bg-purple-50 dark:bg-purple-500/10 border-purple-200', icon: MapPin, label: 'Saiu para Entrega' }
+      case 'NA_FILA': return { color: 'text-amber-500 bg-amber-500/10 border-amber-500/20', icon: Clock, label: 'Na Fila' }
+      case 'PREPARANDO': return { color: 'text-blue-500 bg-blue-500/10 border-blue-500/20', icon: Clock, label: 'Preparando' }
+      case 'PRONTO': return { color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20', icon: PackageCheck, label: 'Pronto para Retirada' }
+      case 'DESPACHADO': return { color: 'text-purple-500 bg-purple-500/10 border-purple-500/20', icon: MapPin, label: 'Saiu para Entrega' }
       case 'FINALIZADO': 
-      case 'ENTREGUE': return { color: 'text-slate-500 bg-slate-50 dark:bg-slate-500/10 border-slate-200', icon: Receipt, label: 'Finalizado' }
-      case 'CANCELADO': return { color: 'text-red-500 bg-red-50 dark:bg-red-500/10 border-red-200', icon: Receipt, label: 'Cancelado' }
-      default: return { color: 'text-slate-500 bg-slate-50 dark:bg-slate-500/10 border-slate-200', icon: Clock, label: status }
+      case 'ENTREGUE': return { color: 'text-muted-foreground bg-muted/50 border-border', icon: Receipt, label: 'Finalizado' }
+      case 'CANCELADO': return { color: 'text-destructive bg-destructive/10 border-destructive/20', icon: Receipt, label: 'Cancelado' }
+      default: return { color: 'text-muted-foreground bg-muted/50 border-border', icon: Clock, label: status }
     }
   }
 

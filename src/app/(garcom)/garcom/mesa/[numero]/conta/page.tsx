@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -75,15 +75,15 @@ export default function ContaMesaPage({ params }: { params: Promise<{ numero: st
     }
   }
 
-  if (loading) return <p className="p-8 text-center text-slate-500">Calculando conta...</p>
+  if (loading) return <p className="p-8 text-center text-muted-foreground">Calculando conta...</p>
 
   if (pedidos.length === 0) {
     return (
       <main className="max-w-2xl mx-auto p-4 md:p-8 text-center">
-        <div className="bg-white p-8 rounded-xl border border-slate-200">
+        <div className="bg-card text-card-foreground p-8 rounded-xl border border-border shadow-sm">
           <CheckCircle size={48} className="mx-auto text-green-500 mb-4" />
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Mesa Livre</h2>
-          <p className="text-slate-500 mb-6">Não há pedidos em aberto para a Mesa {numero}.</p>
+          <h2 className="text-2xl font-bold mb-2">Mesa Livre</h2>
+          <p className="text-muted-foreground mb-6">Não há pedidos em aberto para a Mesa {numero}.</p>
           <Link href="/garcom">
             <Button variant="outline">Voltar para o Painel</Button>
           </Link>
@@ -95,29 +95,29 @@ export default function ContaMesaPage({ params }: { params: Promise<{ numero: st
   return (
     <main className="max-w-3xl mx-auto p-4 md:p-8 pb-24">
       <div className="flex items-center gap-4 mb-6">
-        <Link href={`/garcom/`} className="p-2 bg-white rounded-full border border-slate-200 hover:bg-slate-100">
-          <ArrowLeft size={20} className="text-slate-600" />
+        <Link href={`/garcom/`} className="p-2 bg-card rounded-full border border-border hover:bg-muted transition-colors">
+          <ArrowLeft size={20} className="text-foreground" />
         </Link>
-        <h1 className="text-2xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-foreground">
           Conta da Mesa <span className="text-brand">{numero}</span>
         </h1>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-        <h3 className="font-bold text-lg text-slate-800 mb-4 border-b border-slate-100 pb-2">Extrato de Pedidos</h3>
+      <div className="bg-card text-card-foreground rounded-xl shadow-sm border border-border p-6 mb-6">
+        <h3 className="font-bold text-lg mb-4 border-b border-border pb-2">Extrato de Pedidos</h3>
         
         <div className="space-y-6">
           {pedidos.map((pedido, i) => (
-            <div key={pedido.id} className="border border-slate-100 rounded-lg p-4 bg-slate-50">
+            <div key={pedido.id} className="border border-border rounded-lg p-4 bg-muted/30">
               <div className="flex justify-between items-center mb-3 text-sm">
-                <span className="font-bold text-slate-600">Rodada {i + 1}</span>
-                <span className="text-slate-400">{new Date(pedido.criado_em).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                <span className="font-bold text-muted-foreground">Rodada {i + 1}</span>
+                <span className="text-muted-foreground">{new Date(pedido.criado_em).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
               </div>
               <ul className="space-y-2 mb-3">
                 {pedido.itens_pedido.map((item, idx) => (
                   <li key={idx} className="flex justify-between text-sm">
-                    <span>{item.quantidade}x {item.produtos?.nome || 'Item'}</span>
-                    <span className="text-slate-600 font-medium">R$ {(item.preco_unitario * item.quantidade).toFixed(2).replace('.', ',')}</span>
+                    <span className="text-foreground font-medium">{item.quantidade}x {item.produtos?.nome || 'Item'}</span>
+                    <span className="text-muted-foreground">R$ {(item.preco_unitario * item.quantidade).toFixed(2).replace('.', ',')}</span>
                   </li>
                 ))}
               </ul>
@@ -125,20 +125,20 @@ export default function ContaMesaPage({ params }: { params: Promise<{ numero: st
           ))}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-200">
-          <div className="flex justify-between items-center font-black text-2xl text-slate-800">
+        <div className="mt-6 pt-4 border-t border-border">
+          <div className="flex justify-between items-center font-black text-2xl">
             <span>Total da Conta:</span>
             <span className="text-brand">R$ {totalConta.toFixed(2).replace('.', ',')}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="font-bold text-slate-800 mb-4">Pagamento</h3>
+      <div className="bg-card text-card-foreground rounded-xl shadow-sm border border-border p-6">
+        <h3 className="font-bold mb-4">Pagamento</h3>
         <select 
           value={formaPagamento}
           onChange={(e) => setFormaPagamento(e.target.value)}
-          className="w-full p-3 border border-slate-300 rounded-lg focus:ring-brand focus:border-brand mb-6"
+          className="w-full p-3 border border-border bg-background text-foreground rounded-lg focus:ring-brand focus:border-brand mb-6"
         >
           <option value="PIX">Pix</option>
           <option value="CARTAO_CREDITO">Cartão de Crédito</option>
@@ -149,7 +149,7 @@ export default function ContaMesaPage({ params }: { params: Promise<{ numero: st
         <Button 
           onClick={handleFecharConta}
           disabled={isSubmitting}
-          className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 text-white"
+          className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700 text-white border-0"
         >
           {isSubmitting ? 'Processando...' : 'Receber e Liberar Mesa'}
         </Button>

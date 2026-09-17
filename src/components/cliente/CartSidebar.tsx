@@ -1,152 +1,113 @@
-'use client'
+﻿'use client'
 
-import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, X } from 'lucide-react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetFooter
-} from '@/components/ui/sheet'
+} from "@/components/ui/sheet"
+import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
 
 export function CartSidebar() {
-  const { items, removeItem, updateQuantity, clearCart, totalItems, totalPrice } = useCartStore()
-  const [mounted, setMounted] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
+  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const { items, removeItem, updateQuantity, getTotal } = useCartStore()
 
-  // Prevent hydration mismatch for zustand persist
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Limpa o carrinho após 10 minutos de inatividade
-  useEffect(() => {
-    if (!mounted) return
-
-    const checkInactivity = () => {
-      const { lastUpdated, clearCart, items } = useCartStore.getState()
-      if (items.length > 0 && lastUpdated) {
-        const dezMinutosEmMs = 10 * 60 * 1000
-        if (Date.now() - lastUpdated > dezMinutosEmMs) {
-          clearCart()
-        }
-      }
-    }
-
-    // Checa ao montar e depois a cada minuto
-    checkInactivity()
-    const interval = setInterval(checkInactivity, 60000)
-
-    return () => clearInterval(interval)
-  }, [mounted])
-
-  if (!mounted) {
-    return (
-      <button className="relative p-2 text-slate-700 hover:text-brand transition-colors">
-        <ShoppingCart size={24} />
-      </button>
-    )
+  const handleCheckout = () => {
+    setOpen(false)
+    router.push('/checkout')
   }
 
+  const totalQuantidade = items.reduce((acc, item) => acc + item.quantidade, 0)
+
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger className="relative p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 transition-colors rounded-full shadow-sm">
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger className="relative p-2 bg-card hover:bg-muted border border-border text-foreground transition-colors rounded-full shadow-sm">
         <ShoppingCart size={24} />
-        {totalItems() > 0 && (
-          <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
-            {totalItems()}
+        {totalQuantidade > 0 && (
+          <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-background">
+            {totalQuantidade}
           </span>
         )}
       </SheetTrigger>
       
-      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-white dark:bg-slate-950 border-l-slate-200 dark:border-l-slate-800">
-        <SheetHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
-          <SheetTitle className="text-left text-xl font-bold text-slate-800 dark:text-slate-100 mt-2">
+      <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-card border-l-border">
+        <SheetHeader className="border-b border-border pb-4">
+          <SheetTitle className="flex items-center gap-2 text-foreground">
+            <ShoppingCart size={20} />
             Seu Pedido
           </SheetTitle>
-          {items.length > 0 && (
-            <div className="flex justify-start mt-2">
-              <button
-                onClick={clearCart}
-                className="text-sm flex items-center gap-1.5 text-red-500 hover:text-red-700 transition-colors px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-md"
-              >
-                <Trash2 size={15} />
-                Esvaziar carrinho
-              </button>
-            </div>
-          )}
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto py-4 space-y-4">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4">
-              <ShoppingCart size={48} className="text-slate-300 dark:text-slate-600" />
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground space-y-4">
+              <ShoppingCart size={48} className="opacity-20" />
               <p>Sua sacola está vazia.</p>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Continuar comprando
+              </Button>
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.cartItemId} className="flex gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-                {item.imagem_url ? (
-                  <img src={item.imagem_url} alt={item.nome} className="w-20 h-20 object-cover rounded-lg" />
-                ) : (
-                  <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
-                    <span className="text-xs text-slate-400">Sem foto</span>
-                  </div>
-                )}
+              <div key={item.id} className="flex gap-4 border-b border-border pb-4">
+                <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center overflow-hidden shrink-0 border border-border">
+                  {item.imagem_url ? (
+                    <img src={item.imagem_url} alt={item.nome} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Sem Foto</span>
+                  )}
+                </div>
                 
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">{item.nome}</h4>
-                    
-                    {/* Exibe customizações se houver */}
-                    {(item.removidos.length > 0 || item.adicionais.length > 0) && (
-                      <div className="mt-1 mb-2 text-xs text-slate-500 dark:text-slate-400">
-                        {item.removidos.map(rem => (
-                          <div key={rem} className="text-red-500">- Sem {rem}</div>
-                        ))}
-                        {item.adicionais.map(add => (
-                          <div key={add.nome} className="text-green-600 dark:text-green-500">
-                            + {add.quantidade}x {add.nome}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <span className="text-primary font-bold text-sm block mt-1">
-                      R$ {Number(item.precoTotal).toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                      <button 
-                        onClick={() => updateQuantity(item.cartItemId, item.quantidade - 1)}
-                        className="p-1 hover:text-primary transition-colors"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="w-8 text-center font-medium text-sm">
-                        {item.quantidade}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.cartItemId, item.quantidade + 1)}
-                        className="p-1 hover:text-primary transition-colors"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                    
+                <div className="flex-1 flex flex-col">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-bold text-foreground text-sm leading-tight pr-2">{item.nome}</h4>
                     <button 
-                      onClick={() => removeItem(item.cartItemId)}
-                      className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 p-1.5 rounded-lg transition-colors"
+                      onClick={() => removeItem(item.id)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <Trash2 size={16} />
                     </button>
+                  </div>
+                  
+                  {item.removidos.length > 0 && (
+                    <p className="text-xs text-destructive mt-1">Sem: {item.removidos.join(', ')}</p>
+                  )}
+                  
+                  {item.adicionais.length > 0 && (
+                    <div className="mt-1">
+                      {item.adicionais.map((add, i) => (
+                        <p key={i} className="text-xs text-green-600 dark:text-green-400">
+                          + {add.quantidade}x {add.nome}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-auto pt-2 flex items-center justify-between">
+                    <div className="flex items-center bg-background rounded-lg border border-border">
+                      <button 
+                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantidade - 1))}
+                        className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="w-6 text-center text-sm font-bold text-foreground">{item.quantidade}</span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantidade + 1)}
+                        className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                    <span className="font-bold text-brand">
+                      R$ {((item.precoBase + item.adicionais.reduce((sum, a) => sum + (a.preco * a.quantidade), 0)) * item.quantidade).toFixed(2).replace('.', ',')}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -155,22 +116,21 @@ export function CartSidebar() {
         </div>
 
         {items.length > 0 && (
-          <SheetFooter className="border-t border-slate-200 dark:border-slate-800 pt-4 mt-auto">
-            <div className="w-full flex flex-col gap-4">
-              <div className="flex justify-between items-center text-lg font-bold text-slate-800 dark:text-slate-100">
-                <span>Total:</span>
-                <span>R$ {totalPrice().toFixed(2).replace('.', ',')}</span>
-              </div>
-              
-              <Link 
-                href="/checkout"
-                onClick={() => setIsOpen(false)}
-                className="w-full bg-brand hover:bg-orange-700 text-white font-bold h-12 text-lg flex items-center justify-center rounded-lg transition-colors"
-              >
-                Finalizar Pedido <ArrowRight size={20} className="ml-2" />
-              </Link>
+          <div className="border-t border-border pt-4 mt-auto">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-muted-foreground font-medium">Total</span>
+              <span className="text-2xl font-black text-brand">
+                R$ {getTotal().toFixed(2).replace('.', ',')}
+              </span>
             </div>
-          </SheetFooter>
+            
+            <Button 
+              className="w-full bg-primary hover:bg-orange-700 text-primary-foreground font-bold h-12 text-lg border-0"
+              onClick={handleCheckout}
+            >
+              Finalizar Pedido
+            </Button>
+          </div>
         )}
       </SheetContent>
     </Sheet>

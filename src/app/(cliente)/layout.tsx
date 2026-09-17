@@ -1,29 +1,38 @@
-﻿import { createClient } from '@/lib/supabase/server'
-import { HeaderCliente } from '@/components/cliente/HeaderCliente'
+﻿import { HeaderCliente } from '@/components/cliente/HeaderCliente'
+import { createClient } from '@/lib/supabase/server'
 
-export default async function ClienteLayout({ children }: { children: React.ReactNode }) {
+export default async function ClienteLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  let cargo = 'CLIENTE'
+  
+  let role = 'CLIENTE'
+  
   if (user) {
-    const { data: perfil } = await supabase
+    const { data } = await supabase
       .from('perfis')
       .select('cargo')
       .eq('id', user.id)
       .single()
       
-    if (perfil) {
-      cargo = perfil.cargo?.trim().toUpperCase() || 'CLIENTE'
+    if (data?.cargo) {
+      role = data.cargo.trim().toUpperCase()
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col transition-colors">
-      <HeaderCliente user={user} cargo={cargo} />
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
+      <HeaderCliente role={role} />
       <div className="flex-1">
         {children}
       </div>
+      
+      <footer className="bg-card border-t border-border mt-auto py-8 text-center text-muted-foreground text-sm">
+        <p>© {new Date().getFullYear()} Arte Burgueria. Todos os direitos reservados.</p>
+      </footer>
     </div>
   )
 }

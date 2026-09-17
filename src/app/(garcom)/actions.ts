@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -31,18 +31,20 @@ export async function enviarPedidoCozinha(payload: any, items: any[]) {
     .from('pedidos')
     .insert({
       loja_id: loja.id,
+      user_id: user.id, // OBRIGATÓRIO no banco
       cliente_nome: `Mesa ${payload.mesa} (Garçom: ${perfil?.nome || 'Desconhecido'})`,
       tipo_consumo: 'LOCAL',
       mesa: payload.mesa,
       status: 'NA_FILA',
       total,
-      pago: false, // Fica aguardando pagamento
+      pago: false,
     })
     .select('id')
     .single()
 
   if (pedidoError || !pedido) {
-    return { success: false, error: 'Erro ao criar pedido' }
+    console.error('Erro ao criar pedido garçom:', pedidoError)
+    return { success: false, error: `Erro banco: ${pedidoError?.message}` }
   }
 
   // 3. Inserir itens
@@ -65,7 +67,10 @@ export async function enviarPedidoCozinha(payload: any, items: any[]) {
 
   const { error: itensError } = await supabase.from('itens_pedido').insert(itensInsert)
 
-  if (itensError) return { success: false, error: 'Erro ao inserir itens' }
+  if (itensError) {
+    console.error('Erro ao inserir itens garçom:', itensError)
+    return { success: false, error: `Erro itens: ${itensError.message}` }
+  }
 
   revalidatePath('/garcom')
   return { success: true }
@@ -77,17 +82,15 @@ export async function fecharContaMesa(mesa: string, formaPagamento: string) {
 
   if (!user) return { success: false, error: 'Não autenticado' }
 
-  // Como é apenas uma loja, pega a primeira
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
   if (!loja) return { success: false, error: 'Loja não encontrada' }
 
-  // Atualizar todos os pedidos dessa mesa (que não estão pagos) para pago = true
   const { error } = await supabase
     .from('pedidos')
     .update({ 
       pago: true, 
       forma_pagamento: formaPagamento,
-      status: 'FINALIZADO' // Opcional: pode ser que queira manter o status de preparo, mas geralmente fechar a conta finaliza.
+      status: 'FINALIZADO'
     })
     .eq('loja_id', loja.id)
     .eq('mesa', mesa)

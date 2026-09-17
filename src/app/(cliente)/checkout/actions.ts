@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -35,14 +35,13 @@ export async function criarPedido(payload: any, items: any[]) {
     .eq('id', loja_id)
     .single()
 
-  // Se a coluna 'aberta' não existir no banco ainda, assumimos que está aberta (para não quebrar sistemas antigos)
   if (loja && loja.aberta === false) {
     return { success: false, error: 'Desculpe, a loja está fechada no momento.' }
   }
 
   const taxaEntrega = loja?.taxa_entrega ? Number(loja.taxa_entrega) : 0
   
-  // Calcular o total no backend por segurança
+  // Calcular o total no backend
   let total = items.reduce((acc, item) => acc + (item.precoTotal * item.quantidade), 0)
   
   if (payload.tipoConsumo === 'DELIVERY') {
@@ -58,7 +57,6 @@ export async function criarPedido(payload: any, items: any[]) {
       cliente_nome: user.user_metadata?.nome || user.email,
       telefone: payload.endereco?.telefone || null,
       tipo_consumo: payload.tipoConsumo,
-      endereco: payload.endereco, // Precisaremos adicionar essa coluna JSONB no Supabase
       endereco: payload.endereco, 
       status: 'NA_FILA',
       total,
@@ -70,13 +68,11 @@ export async function criarPedido(payload: any, items: any[]) {
 
   if (pedidoError || !pedido) {
     console.error('Erro ao criar pedido:', pedidoError)
-    return { success: false, error: 'Erro ao criar pedido' }
     return { success: false, error: `Erro interno: ${pedidoError?.message || 'Desconhecido'}` }
   }
 
   // 3. Criar Itens do Pedido
   const itensInsert = items.map(item => {
-    // Montar a string de observação baseada nas remoções e adicionais
     const obsArr = []
     if (item.removidos && item.removidos.length > 0) {
       obsArr.push(`Sem: ${item.removidos.join(', ')}`)
@@ -102,8 +98,6 @@ export async function criarPedido(payload: any, items: any[]) {
 
   if (itensError) {
     console.error('Erro ao inserir itens:', itensError)
-    // Em um sistema real poderíamos fazer rollback do pedido aqui (deletar o pedido criado)
-    return { success: false, error: 'Erro ao processar itens do pedido' }
     return { success: false, error: `Erro itens: ${itensError.message}` }
   }
 
