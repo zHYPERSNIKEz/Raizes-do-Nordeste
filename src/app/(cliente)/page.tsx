@@ -1,4 +1,6 @@
-﻿import { createClient } from "@/lib/supabase/server"
+﻿export const dynamic = 'force-dynamic'
+
+import { createClient } from "@/lib/supabase/server"
 import { AddToCartButton } from "@/components/cliente/AddToCartButton"
 
 export default async function VitrinePage() {

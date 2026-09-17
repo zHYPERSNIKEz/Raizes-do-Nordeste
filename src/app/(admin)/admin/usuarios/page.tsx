@@ -1,13 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { UsuariosListClient } from '@/components/admin/UsuariosListClient'
+import { NovoUsuarioForm } from '@/components/admin/NovoUsuarioForm'
 
 export default async function UsuariosPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    redirect('/login?returnUrl=/admin/usuarios')
+    redirect('/admin/login')
   }
 
   const { data: perfil } = await supabase
@@ -16,12 +17,17 @@ export default async function UsuariosPage() {
     .eq('id', user.id)
     .single()
 
-  if (perfil?.cargo !== 'ADMIN') {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Apenas administradores.</div>
+  const userCargo = perfil?.cargo?.trim().toUpperCase()
+
+  if (userCargo !== 'ADMIN') {
+    return (
+      <div className="p-8 text-center text-red-500 bg-slate-950 min-h-screen">
+        Acesso negado. Apenas administradores podem gerenciar a equipe.
+      </div>
+    )
   }
 
   // Traz a lista completa de usuários cadastrados
-  // O ideal em produção seria paginar, mas para MVP traremos os 100 mais recentes
   const { data: usuarios } = await supabase
     .from('perfis')
     .select('id, nome, cargo, criado_em, telefone')
@@ -33,12 +39,22 @@ export default async function UsuariosPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-slate-100 mb-2">Equipe e Usuários</h1>
         <p className="text-slate-400">
-          Gerencie os acessos do sistema. Para convidar um funcionário, peça a ele que se cadastre 
-          normalmente na loja e depois altere o cargo dele aqui.
+          Gerencie os acessos do sistema. Você pode cadastrar um funcionário diretamente por aqui.
         </p>
       </header>
 
-      <UsuariosListClient usuarios={usuarios || []} currentUser={user.id} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <UsuariosListClient usuarios={usuarios || []} currentUser={user.id} />
+        </div>
+        
+        <div>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sticky top-8">
+            <h2 className="text-xl font-bold text-slate-100 mb-6">Cadastrar Funcionário</h2>
+            <NovoUsuarioForm />
+          </div>
+        </div>
+      </div>
     </main>
   )
 }
