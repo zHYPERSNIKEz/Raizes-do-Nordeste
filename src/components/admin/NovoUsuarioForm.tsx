@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { criarFuncionario } from '@/app/(admin)/admin/usuarios/actions'
+import { criarFuncionario } from '@/app/(admin)/admin/equipe/actions'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { UserPlus, Loader2 } from 'lucide-react'
@@ -77,3 +77,4 @@ export function NovoUsuarioForm() {
     </form>
   )
 }
+

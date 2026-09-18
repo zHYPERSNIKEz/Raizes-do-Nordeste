@@ -13,14 +13,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/admin/login')
   }
 
-  // Verifica o cargo para garantir segurança
+  // Verifica o cargo e permissões para garantir segurança
   const { data: perfil } = await supabase
     .from('perfis')
-    .select('cargo')
+    .select('cargo, permissoes')
     .eq('id', user.id)
     .single()
 
   const userCargo = perfil?.cargo?.trim().toUpperCase()
+  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
 
   if (userCargo === 'CLIENTE') {
     return (
@@ -31,6 +32,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     )
   }
 
+  const isMaster = userCargo === 'ADMIN' || userCargo === 'GERENTE'
+  const podeCaixa = isMaster || permissoes.includes('acesso_caixa')
+  const podeProdutos = isMaster || permissoes.includes('acesso_produtos')
+  const podeRelatorios = isMaster || permissoes.includes('acesso_relatorios')
+
   return (
     <div className="dark min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row">
       {/* Sidebar */}
@@ -40,28 +46,44 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
+          {podeRelatorios && (
+            <Link href="/admin/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+              <LayoutDashboard size={20} /> Dashboard
+            </Link>
+          )}
+
+          {podeCaixa && (
+            <Link href="/admin/caixa" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+              <Wallet size={20} /> Fechamento de Caixa
+            </Link>
+          )}
+          
           {userCargo !== 'COZINHA' && (
+            <Link href="/admin/pedidos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+              <ClipboardList size={20} /> Pedidos
+            </Link>
+          )}
+
+          {podeProdutos && (
+            <Link href="/admin/produtos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+              <Package size={20} /> Produtos
+            </Link>
+          )}
+
+          {isMaster && (
             <>
-              <Link href="/admin/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
-                <LayoutDashboard size={20} /> Dashboard
+              <Link href="/admin/equipe" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <Users size={20} /> Equipe
               </Link>
-              <Link href="/admin/caixa" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
-                <Wallet size={20} /> Fechamento de Caixa
-              </Link>
-              <Link href="/admin/pedidos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
-                <ClipboardList size={20} /> Pedidos
-              </Link>
-              <Link href="/admin/produtos" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
-                <Package size={20} /> Produtos
-              </Link>
-              <Link href="/admin/usuarios" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
-                <Users size={20} /> Equipe / Usuários
+              <Link href="/admin/clientes" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
+                <Users size={20} /> Clientes
               </Link>
               <Link href="/admin/configuracoes" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
                 <Settings size={20} /> Configurações
               </Link>
             </>
           )}
+
           <Link href="/admin/cozinha" className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors">
             <ChefHat size={20} /> Kanban Cozinha
           </Link>

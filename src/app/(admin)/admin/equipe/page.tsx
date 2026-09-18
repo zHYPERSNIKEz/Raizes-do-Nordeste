@@ -30,16 +30,16 @@ export default async function UsuariosPage() {
   // Traz a lista completa de usuários cadastrados
   const { data: usuarios } = await supabase
     .from('perfis')
-    .select('id, nome, cargo, criado_em, telefone')
+    .select('id, nome, cargo, permissoes, criado_em, telefone')
     .order('criado_em', { ascending: false })
-    .limit(100)
+    .neq('cargo', 'CLIENTE').limit(100)
 
   return (
     <main className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-100 mb-2">Equipe e Usuários</h1>
+        <h1 className="text-3xl font-bold text-slate-100 mb-2">Gestão de Equipe</h1>
         <p className="text-slate-400">
-          Gerencie os acessos do sistema. Você pode cadastrar um funcionário diretamente por aqui.
+          Gerencie os acessos do sistema. Você pode cadastrar um funcionário e gerenciar permissões específicas por aqui.
         </p>
       </header>
 
@@ -58,3 +58,4 @@ export default async function UsuariosPage() {
     </main>
   )
 }
+

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CaixaManager } from '@/components/admin/CaixaManager'
 import { AlertCircle } from 'lucide-react'
@@ -9,8 +9,14 @@ export default async function CaixaPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?returnUrl=/admin/caixa')
 
-  const { data: perfil } = await supabase.from('perfis').select('cargo').eq('id', user.id).single()
-  if (perfil?.cargo !== 'ADMIN') return <div className="p-8 text-center text-red-500">Acesso negado. Apenas administradores.</div>
+  const { data: perfil } = await supabase.from('perfis').select('cargo, permissoes').eq('id', user.id).single()
+  const cargo = perfil?.cargo?.trim().toUpperCase()
+  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
+
+  // Permite acesso se for ADMIN, GERENTE ou tiver a permissão extra "acesso_caixa"
+  if (cargo !== 'ADMIN' && cargo !== 'GERENTE' && !permissoes.includes('acesso_caixa')) {
+    return <div className="p-8 text-center text-red-500">Acesso negado. Você não tem permissão para acessar o Caixa.</div>
+  }
 
   const { data: loja } = await supabase.from('lojas').select('id, nome').limit(1).single()
   if (!loja) return <div className="p-8">Loja não encontrada.</div>

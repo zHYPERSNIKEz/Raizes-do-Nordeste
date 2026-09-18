@@ -1,15 +1,17 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { atualizarCargoUsuario } from '@/app/(admin)/admin/usuarios/actions'
+import { atualizarCargoUsuario } from '@/app/(admin)/admin/equipe/actions'
 import { Shield, User, ChefHat, Coffee, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { GerenciarPermissoesModal } from './GerenciarPermissoesModal'
 
 type Perfil = {
   id: string
   nome: string
   cargo: string
+  permissoes?: string[]
   telefone?: string
   criado_em: string
 }
@@ -75,7 +77,7 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
                 <th className="px-6 py-4">Nome do Usuário</th>
                 <th className="px-6 py-4">Telefone</th>
                 <th className="px-6 py-4">Cargo Atual</th>
-                <th className="px-6 py-4 text-right">Ação (Mudar Cargo)</th>
+                <th className="px-6 py-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
@@ -97,10 +99,15 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {u.id === currentUser ? (
-                       <span className="text-slate-500 text-xs italic">Não é possível alterar o próprio cargo</span>
-                    ) : (
-                      <div className="flex gap-2 justify-end">
+                    <div className="flex gap-2 justify-end items-center">
+                      <GerenciarPermissoesModal usuario={{
+                        id: u.id,
+                        nome: u.nome,
+                        cargo: u.cargo,
+                        permissoes: u.permissoes || []
+                      }} />
+
+                      {u.id !== currentUser && (
                         <select 
                           disabled={loading === u.id}
                           value={u.cargo?.trim().toUpperCase()}
@@ -118,8 +125,8 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
                           <option value="GERENTE">Gerente</option>
                           <option value="ADMIN">Administrador</option>
                         </select>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -145,7 +152,7 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Confirmar Alteração</h3>
             <p className="text-slate-400 text-sm mb-6 leading-relaxed">
-              Você está alterando as permissões de acesso de <strong className="text-slate-200">{confirmModal.nome}</strong>. O novo cargo será <strong className="text-brand">{confirmModal.novoCargo}</strong>.
+              Você está alterando o cargo de <strong className="text-slate-200">{confirmModal.nome}</strong>. O novo cargo será <strong className="text-brand">{confirmModal.novoCargo}</strong>.
             </p>
             <div className="flex gap-3">
               <Button 
@@ -168,3 +175,4 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
     </>
   )
 }
+
