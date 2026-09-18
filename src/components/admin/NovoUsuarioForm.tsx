@@ -66,15 +66,18 @@ export function NovoUsuarioForm() {
           <option value="COZINHA">Cozinha (Kanban)</option>
           <option value="GERENTE">Gerente</option>
           <option value="ADMIN">Administrador</option>
-          <option value="CLIENTE">Cliente (Teste)</option>
+          <option value="ENTREGADOR">Entregador</option>
         </select>
       </div>
 
       <Button type="submit" disabled={loading} className="w-full mt-2 bg-brand hover:bg-orange-600 text-white font-bold h-11">
         {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <UserPlus className="mr-2" size={20} />}
-        Cadastrar Usuário
+        Cadastrar Funcionário
       </Button>
     </form>
   )
 }
+
+
+
 

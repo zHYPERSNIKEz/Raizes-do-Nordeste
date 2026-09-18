@@ -39,7 +39,7 @@ export async function criarFuncionario(formData: FormData) {
   if (authData.user) {
     const { error: profileError } = await supabaseService
       .from('perfis')
-      .insert({
+      .upsert({
         id: authData.user.id,
         nome,
         cargo,
@@ -103,3 +103,46 @@ export async function atualizarPermissoesUsuario(userId: string, permissoes: str
 }
 
 
+
+
+export async function buscarDadosUsuarioAuth(userId: string) {
+  const supabaseService = (await import('@supabase/supabase-js')).createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data, error } = await supabaseService.auth.admin.getUserById(userId)
+  if (error) return { success: false, error: error.message }
+  return { success: true, email: data.user.email }
+}
+
+export async function atualizarFuncionario(userId: string, dados: { nome: string, telefone: string, email: string, senha?: string }) {
+  const supabaseService = (await import('@supabase/supabase-js')).createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // 1. Atualizar no Auth (Email e Senha se fornecida)
+  const authUpdates: any = {
+    email: dados.email,
+    email_confirm: true,
+    user_metadata: { nome: dados.nome }
+  }
+  if (dados.senha && dados.senha.trim().length >= 6) {
+    authUpdates.password = dados.senha
+  }
+
+  const { error: authError } = await supabaseService.auth.admin.updateUserById(userId, authUpdates)
+  if (authError) return { success: false, error: authError.message }
+
+  // 2. Atualizar no Perfil (Nome e Telefone)
+  const { error: profileError } = await supabaseService
+    .from('perfis')
+    .update({ nome: dados.nome, telefone: dados.telefone })
+    .eq('id', userId)
+
+  if (profileError) return { success: false, error: profileError.message }
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/admin/equipe')
+  return { success: true }
+}

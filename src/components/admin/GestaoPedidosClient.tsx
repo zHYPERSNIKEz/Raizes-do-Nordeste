@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -32,7 +32,7 @@ function ConsumoBadge({ tipo, mesa }: { tipo: string, mesa?: number }) {
   if (tipo === 'DELIVERY') {
     return <span className="bg-rose-500/20 text-rose-400 px-2 py-1 rounded text-xs font-bold">DELIVERY</span>
   }
-  return <span className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs font-bold">BALCÃO</span>
+  return <span className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs font-bold">BALCÃƒO</span>
 }
 
 export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosIniciais: any[], lojaId: string }) {
@@ -41,7 +41,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
   const [filtroStatus, setFiltroStatus] = useState<string>('TODOS')
   const [pedidoSelecionado, setPedidoSelecionado] = useState<any | null>(null)
 
-  // Subscrição Realtime
+  // SubscriÃ§Ã£o Realtime
   useEffect(() => {
     const channel = supabase
       .channel('admin-pedidos-caixa')
@@ -69,7 +69,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
             })
           } else {
             // Um INSERT ou DELETE. Como precisamos dos relacionamentos `itens_pedido`,
-            // recarregamos a página de forma reativa ou refazemos o fetch localmente.
+            // recarregamos a pÃ¡gina de forma reativa ou refazemos o fetch localmente.
             const newRecord = payload.new as any
             
             const { data } = await supabase
@@ -97,14 +97,14 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
     }
   }, [supabase, lojaId])
 
-  // Lógica de Filtros
+  // LÃ³gica de Filtros
   const pedidosFiltrados = pedidos.filter(p => {
     if (filtroStatus === 'TODOS') return true
     if (filtroStatus === 'ATIVOS') return !['FINALIZADO', 'CANCELADO'].includes(p.status)
     return p.status === filtroStatus
   })
 
-  // Funções de Ação Rápida
+  // FunÃ§Ãµes de AÃ§Ã£o RÃ¡pida
   const handleAtualizarStatus = async (id: string, novoStatus: string) => {
     await atualizarStatusPedido(id, novoStatus)
   }
@@ -146,7 +146,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3 text-right">Total</th>
                   <th className="px-4 py-3 text-center">Pagamento</th>
-                  <th className="px-4 py-3 text-center">Ação</th>
+                  <th className="px-4 py-3 text-center">AÃ§Ã£o</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
@@ -164,7 +164,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                       onClick={() => setPedidoSelecionado(pedido)}
                     >
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="font-mono text-slate-500">#{pedido.id.split('-')[0]}</div>
+                        <div className="font-mono text-slate-500">#{(pedido.numero_pedido || pedido.id.split('-')[0])}</div>
                         <div className="text-xs">
                           {new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date(pedido.criado_em))}
                         </div>
@@ -212,9 +212,9 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
         <div className="w-full lg:w-96 bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col max-h-[calc(100vh-8rem)] sticky top-8">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-xl font-bold text-slate-100">Pedido #{pedidoSelecionado.id.split('-')[0]}</h2>
+              <h2 className="text-xl font-bold text-slate-100">Pedido #{(pedidoSelecionado.numero_pedido || pedidoSelecionado.id.split('-')[0])}</h2>
               <p className="text-sm text-slate-400">
-                {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(pedidoSelecionado.criado_em)).replace(',', ' às')}
+                {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(pedidoSelecionado.criado_em)).replace(',', ' Ã s')}
               </p>
             </div>
             <button onClick={() => setPedidoSelecionado(null)} className="text-slate-500 hover:text-white">
@@ -254,7 +254,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
               </div>
             </div>
 
-            {/* Endereço Delivery */}
+            {/* EndereÃ§o Delivery */}
             {pedidoSelecionado.tipo_consumo === 'DELIVERY' && pedidoSelecionado.endereco && (
               <div className="bg-brand/10 border border-brand/20 p-3 rounded-lg flex items-start gap-3">
                 <MapPin className="text-brand shrink-0 mt-0.5" size={18} />
@@ -279,7 +279,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                     <div className="flex gap-2">
                       <span className="font-bold text-slate-400">{item.quantidade}x</span>
                       <div>
-                        <p className="text-slate-200">{item.produtos?.nome || 'Produto Indisponível'}</p>
+                        <p className="text-slate-200">{item.produtos?.nome || 'Produto IndisponÃ­vel'}</p>
                         {item.observacao && (
                           <p className="text-xs text-brand/80 mt-0.5">{item.observacao}</p>
                         )}
@@ -296,9 +296,9 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
             </div>
           </div>
 
-          {/* Ações Inferiores */}
+          {/* AÃ§Ãµes Inferiores */}
           <div className="mt-6 pt-4 border-t border-slate-800 space-y-2">
-            <h4 className="text-xs text-slate-500 mb-2 font-semibold">Avançar Status:</h4>
+            <h4 className="text-xs text-slate-500 mb-2 font-semibold">AvanÃ§ar Status:</h4>
             
             {pedidoSelecionado.status === 'NA_FILA' && (
               <button 
@@ -327,7 +327,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
               </button>
             )}
             
-            {/* Finalizar pode vir de Pronto (se não for delivery) ou de Despachado (se for delivery) */}
+            {/* Finalizar pode vir de Pronto (se nÃ£o for delivery) ou de Despachado (se for delivery) */}
             {((pedidoSelecionado.status === 'PRONTO' && pedidoSelecionado.tipo_consumo !== 'DELIVERY') || 
                pedidoSelecionado.status === 'DESPACHADO') && (
               <button 
@@ -354,3 +354,4 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
     </div>
   )
 }
+

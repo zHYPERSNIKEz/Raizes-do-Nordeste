@@ -1,11 +1,12 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { atualizarCargoUsuario } from '@/app/(admin)/admin/equipe/actions'
 import { Shield, User, ChefHat, Coffee, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { GerenciarPermissoesModal } from './GerenciarPermissoesModal'
+import { EditarUsuarioModal } from './EditarUsuarioModal'
 
 type Perfil = {
   id: string
@@ -20,6 +21,10 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
   const [loading, setLoading] = useState<string | null>(null)
   const [lista, setLista] = useState(usuarios)
   const [busca, setBusca] = useState('')
+
+  useEffect(() => {
+    setLista(usuarios)
+  }, [usuarios])
   
   // Estado do Modal
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; userId: string; novoCargo: string; nome: string } | null>(null)
@@ -100,6 +105,8 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex gap-2 justify-end items-center">
+                      <EditarUsuarioModal usuario={{ id: u.id, nome: u.nome, telefone: u.telefone }} />
+
                       <GerenciarPermissoesModal usuario={{
                         id: u.id,
                         nome: u.nome,
@@ -119,7 +126,7 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
                           }}
                           className="bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-300 focus:border-brand disabled:opacity-50 text-sm outline-none cursor-pointer"
                         >
-                          <option value="CLIENTE">Cliente</option>
+                          <option value="ENTREGADOR">Entregador</option>
                           <option value="GARCOM">Garçom</option>
                           <option value="COZINHA">Cozinha</option>
                           <option value="GERENTE">Gerente</option>
@@ -175,4 +182,8 @@ export function UsuariosListClient({ usuarios, currentUser }: { usuarios: Perfil
     </>
   )
 }
+
+
+
+
 

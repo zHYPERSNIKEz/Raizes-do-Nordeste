@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { GestaoPedidosClient } from '@/components/admin/GestaoPedidosClient'
 
 export default async function PedidosPage() {
   const supabase = await createClient()
 
-  // 1. Validar autenticação e perfil
+  // 1. Validar autenticaÃ§Ã£o e perfil
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login?returnUrl=/admin/pedidos')
@@ -21,11 +21,11 @@ export default async function PedidosPage() {
     return <div className="p-8 text-center text-red-500">Acesso negado. Apenas administradores e caixa.</div>
   }
 
-  // 2. Pegar a única loja do sistema
+  // 2. Pegar a Ãºnica loja do sistema
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
   
   if (!loja) {
-    return <div className="p-8 text-center text-red-500">Erro crítico: Nenhuma loja cadastrada no banco.</div>
+    return <div className="p-8 text-center text-red-500">Erro crÃ­tico: Nenhuma loja cadastrada no banco.</div>
   }
 
   // 3. Buscar os pedidos do dia / recentes (vamos trazer os mais recentes e os ativos)
@@ -35,11 +35,11 @@ export default async function PedidosPage() {
   const { data: pedidos } = await supabase
     .from('pedidos')
     .select(`
-      id, cliente_nome, telefone, tipo_consumo, mesa, status, criado_em, total, forma_pagamento, pago, endereco,
+      id, numero_pedido, cliente_nome, telefone, tipo_consumo, mesa, status, criado_em, total, forma_pagamento, pago, endereco,
       itens_pedido ( quantidade, preco_unitario, observacao, produtos(nome) )
     `)
     .eq('loja_id', loja.id)
-    // Traz pedidos que não estão finalizados/cancelados OU que foram criados hoje
+    // Traz pedidos que nÃ£o estÃ£o finalizados/cancelados OU que foram criados hoje
     .or(`status.in.(NA_FILA,PREPARANDO,PRONTO,DESPACHADO),criado_em.gte.${hoje.toISOString()}`)
     .order('criado_em', { ascending: false })
 
@@ -48,10 +48,10 @@ export default async function PedidosPage() {
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
-            📋 Gestão de Pedidos (Caixa)
+            ðŸ“‹ GestÃ£o de Pedidos (Caixa)
           </h1>
           <p className="text-slate-400 mt-2">
-            Acompanhe todos os pedidos da loja, gerencie entregas e confirmação de pagamentos.
+            Acompanhe todos os pedidos da loja, gerencie entregas e confirmaÃ§Ã£o de pagamentos.
           </p>
         </header>
 
@@ -60,3 +60,4 @@ export default async function PedidosPage() {
     </main>
   )
 }
+

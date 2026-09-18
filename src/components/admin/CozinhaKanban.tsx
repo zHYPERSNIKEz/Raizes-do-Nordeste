@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,7 @@ type ItemPedido = {
 
 type Pedido = {
   id: string
+  numero_pedido?: number
   cliente_nome: string
   tipo_consumo: string
   mesa: string | null
@@ -48,7 +49,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
           if (payload.eventType === 'INSERT') {
             const novoPedido = payload.new as Pedido
             
-            // Buscar os itens (pois o webhook não traz join)
+            // Buscar os itens (pois o webhook nÃ£o traz join)
             const { data: itens } = await supabase
               .from('itens_pedido')
               .select('quantidade, observacao, produtos(nome)')
@@ -106,6 +107,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
       <div className="flex justify-between items-start border-b border-slate-700 pb-2">
         <div>
           <h4 className="font-bold text-orange-400">
+            <span className="text-slate-300 mr-2">#{pedido.numero_pedido || pedido.id.split('-')[0]}</span>
             {pedido.tipo_consumo === 'LOCAL' ? `Mesa ${pedido.mesa}` : 'Delivery / Retirada'}
           </h4>
           <p className="text-sm font-semibold">{pedido.cliente_nome}</p>
@@ -130,7 +132,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
             onClick={() => handleMudarStatus(pedido.id, 'PREPARANDO')}
             className="col-span-2 bg-blue-600 hover:bg-blue-700 font-bold"
           >
-            Começar Preparo
+            ComeÃ§ar Preparo
           </Button>
         )}
         {pedido.status === 'PREPARANDO' && (
@@ -197,3 +199,6 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
     </div>
   )
 }
+
+
+

@@ -13,7 +13,7 @@ export default async function MeusPedidosPage() {
 
   const { data: pedidos } = await supabase
     .from('pedidos')
-    .select('id, status, criado_em, total, tipo_consumo')
+    .select('id, numero_pedido, status, criado_em, total, tipo_consumo')
     .eq('user_id', user.id)
     .order('criado_em', { ascending: false })
     .limit(20)
@@ -74,7 +74,7 @@ export default async function MeusPedidosPage() {
                     </div>
                     
                     <div>
-                      <p className="font-bold text-foreground text-lg mb-1">Pedido #{pedido.id.split('-')[0]}</p>
+                      <p className="font-bold text-foreground text-lg mb-1">Pedido #{pedido.numero_pedido || pedido.id.split('-')[0]}</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
                         <span>{new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(pedido.criado_em))}</span>
                         <span>•</span>
@@ -105,3 +105,5 @@ export default async function MeusPedidosPage() {
     </main>
   )
 }
+
+

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+﻿import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { PedidoStatusClient } from '@/components/cliente/PedidoStatusClient'
 
@@ -7,7 +7,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
   
   const supabase = await createClient()
 
-  // 1. Validar autenticação
+  // 1. Validar autenticaÃ§Ã£o
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect(`/login?returnUrl=/pedido/${id}`)
@@ -17,7 +17,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
   const { data: pedido, error } = await supabase
     .from('pedidos')
     .select(`
-      id, cliente_nome, telefone, tipo_consumo, status, criado_em, total, forma_pagamento, pago, endereco,
+      id, numero_pedido, cliente_nome, telefone, tipo_consumo, status, criado_em, total, forma_pagamento, pago, endereco,
       itens_pedido ( quantidade, preco_unitario, observacao, produtos(nome, imagem_url) )
     `)
     .eq('id', id)
@@ -33,3 +33,4 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
     </main>
   )
 }
+

@@ -67,7 +67,7 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
 
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-2xl font-black text-slate-800">Pedido #{pedido.id.split('-')[0]}</h1>
+          <h1 className="text-2xl font-black text-slate-800">Pedido #{pedido.numero_pedido || pedido.id.split('-')[0]}</h1>
           <p className="text-slate-500 mt-1">
             Realizado em {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(pedido.criado_em)).replace(',', ' Ã s')}
           </p>
@@ -195,4 +195,5 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
     </div>
   )
 }
+
 
