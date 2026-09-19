@@ -20,17 +20,27 @@ export function LoginForm() {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
-      toast.error('Credenciais inválidas.')
+    if (error || !data.user) {
+      toast.error('Credenciais invlidas.')
       setLoading(false)
     } else {
-      router.push('/admin/dashboard')
-      router.refresh()
+      const { data: perfil } = await supabase.from('perfis').select('cargo').eq('id', data.user.id).single()
+      const cargo = perfil?.cargo?.trim().toUpperCase()
+      
+      if (cargo === 'COZINHA') {
+        window.location.href = '/admin/cozinha'
+      } else if (cargo === 'GARCOM') {
+        window.location.href = '/garcom'
+      } else if (cargo === 'ENTREGADOR') {
+        window.location.href = '/entregador'
+      } else {
+        window.location.href = '/admin/dashboard'
+      }
     }
   }
 
