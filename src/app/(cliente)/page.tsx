@@ -1,7 +1,8 @@
-﻿export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 
 import { createClient } from "@/lib/supabase/server"
 import { AddToCartButton } from "@/components/cliente/AddToCartButton"
+import { isLojaAbertaAgora } from "@/lib/utils"
 
 export default async function VitrinePage() {
   const supabase = await createClient()
@@ -13,6 +14,9 @@ export default async function VitrinePage() {
     .select('*')
     .eq('ativo', true)
 
+  const { data: loja } = await supabase.from('lojas').select('*').limit(1).single()
+  const lojaAberta = isLojaAbertaAgora(loja)
+
   return (
     <main className="min-h-screen bg-background pb-20">
       <header className="w-full bg-foreground text-background py-16 md:py-24 px-6 mb-12 rounded-b-[3rem] shadow-xl relative overflow-hidden">
@@ -23,12 +27,25 @@ export default async function VitrinePage() {
           <div className="bg-primary text-primary-foreground text-sm md:text-base font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider shadow-md">
             Sabor Incomparável
           </div>
+          {!lojaAberta ? (
+            <div className="bg-red-600/90 text-white text-sm md:text-base font-black px-8 py-3 rounded-full mb-6 uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.7)] border border-red-400/50 animate-pulse flex items-center gap-2">
+              <span className="text-xl">🛑</span> Loja Fechada no Momento
+            </div>
+          ) : (
+            <div className="bg-primary text-primary-foreground text-sm md:text-base font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider shadow-md">
+              Sabor Incomparável
+            </div>
+          )}
+          
           <h1 className="font-display text-6xl md:text-8xl tracking-wide leading-tight mb-4 text-primary">
             Arte<br />
             <span className="text-background">Burgueria</span>
           </h1>
           <p className="text-lg md:text-xl max-w-lg opacity-90 mt-4">
             {user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'O hambúrguer artesanal de verdade. Faça login para pedir.'}
+            {!lojaAberta 
+              ? 'Voltaremos em breve! Confira nosso cardápio enquanto isso.'
+              : user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'O hambúrguer artesanal de verdade. Faça login para pedir.'}
           </p>
         </div>
       </header>

@@ -16,13 +16,19 @@ export async function atualizarConfiguracoesLoja(formData: FormData) {
   const nome = formData.get('nome') as string
   const aberta = formData.get('aberta') === 'true'
   const taxa_entrega = parseFloat(formData.get('taxa_entrega') as string || '0')
+  const horario_automatico = formData.get('horario_automatico') === 'true'
+  const hora_abertura = formData.get('hora_abertura') as string || null
+  const hora_fechamento = formData.get('hora_fechamento') as string || null
 
   const { error } = await supabase
     .from('lojas')
     .update({ 
       nome, 
       aberta, 
-      taxa_entrega 
+      taxa_entrega,
+      horario_automatico,
+      hora_abertura,
+      hora_fechamento
     })
     .eq('id', id)
 

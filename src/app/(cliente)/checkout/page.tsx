@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CheckoutForm } from '@/components/cliente/CheckoutForm'
 
+import { isLojaAbertaAgora } from '@/lib/utils'
+
 export default async function CheckoutPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -22,12 +24,12 @@ export default async function CheckoutPage() {
   // Busca as configs da loja
   const { data: loja } = await supabase
     .from('lojas')
-    .select('taxa_entrega, aberta')
+    .select('taxa_entrega, aberta, horario_automatico, hora_abertura, hora_fechamento')
     .limit(1)
     .single()
 
   const taxaEntrega = loja?.taxa_entrega ? Number(loja.taxa_entrega) : 0
-  const lojaAberta = loja?.aberta !== false
+  const lojaAberta = isLojaAbertaAgora(loja)
 
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-8">

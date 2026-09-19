@@ -1,6 +1,7 @@
-﻿'use server'
+'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { isLojaAbertaAgora } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 
 export async function criarPedido(payload: any, items: any[]) {
@@ -31,11 +32,11 @@ export async function criarPedido(payload: any, items: any[]) {
   // 1.5 Verificar se a loja está aberta e pegar a taxa de entrega
   const { data: loja } = await supabase
     .from('lojas')
-    .select('aberta, taxa_entrega')
+    .select('id, taxa_entrega, aberta, horario_automatico, hora_abertura, hora_fechamento')
     .eq('id', loja_id)
     .single()
 
-  if (loja && loja.aberta === false) {
+  if (loja && !isLojaAbertaAgora(loja)) {
     return { success: false, error: 'Desculpe, a loja está fechada no momento.' }
   }
 

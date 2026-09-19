@@ -58,6 +58,7 @@ export function CaixaManager({ lojaId, caixaAtual, pedidos, movimentacoes }: any
     if (res.success) {
       toast.success('Caixa fechado com sucesso!')
       setShowFechamento(false)
+      window.location.reload() // Força o recarregamento completo para voltar à tela de abrir caixa
     } else {
       toast.error('Erro ao fechar caixa: ' + res.error)
     }

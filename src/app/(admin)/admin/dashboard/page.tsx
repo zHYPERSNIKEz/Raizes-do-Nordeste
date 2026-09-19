@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardClient } from '@/components/admin/DashboardClient'
 import { subDays, startOfDay, endOfDay, parseISO } from 'date-fns'
@@ -24,7 +24,8 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
 
   let query = supabase
     .from('pedidos')
-    .select('id, total, criado_em, itens')
+    
+    .select('id, total, criado_em, itens_pedido(quantidade, produtos(nome))')
     .eq('loja_id', loja?.id)
     .eq('pago', true)
 
@@ -45,7 +46,18 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
     query = query.gte('criado_em', trintaDiasAtras)
   }
 
-  const { data: pedidos } = await query.order('criado_em', { ascending: true })
+  
+  const { data: rawPedidos } = await query.order('criado_em', { ascending: true })
+
+  const pedidosMapeados = (rawPedidos || []).map((p: any) => ({
+    id: p.id,
+    total: p.total,
+    criado_em: p.criado_em,
+    itens: p.itens_pedido?.map((ip: any) => ({
+      nome: ip.produtos?.nome || 'Produto',
+      quantidade: ip.quantidade
+    })) || []
+  }))
 
   return (
     <main className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen">
@@ -54,7 +66,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
         <p className="text-slate-400 mt-1">Acompanhe o desempenho da sua hamburgueria.</p>
       </header>
 
-      <DashboardClient pedidos={pedidos || []} periodoAtual={periodo} inicioAtual={searchParams.inicio} fimAtual={searchParams.fim} />
+      <DashboardClient pedidos={pedidosMapeados || []} periodoAtual={periodo} inicioAtual={searchParams.inicio} fimAtual={searchParams.fim} />
     </main>
   )
 }
