@@ -32,7 +32,7 @@ export async function criarPedido(payload: any, items: any[]) {
   // 1.5 Verificar se a loja está aberta e pegar a taxa de entrega
   const { data: loja } = await supabase
     .from('lojas')
-    .select('id, taxa_entrega, aberta, horario_automatico, hora_abertura, hora_fechamento')
+    .select('*')
     .eq('id', loja_id)
     .single()
 

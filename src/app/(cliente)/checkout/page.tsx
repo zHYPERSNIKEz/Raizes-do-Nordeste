@@ -24,7 +24,7 @@ export default async function CheckoutPage() {
   // Busca as configs da loja
   const { data: loja } = await supabase
     .from('lojas')
-    .select('taxa_entrega, aberta, horario_automatico, hora_abertura, hora_fechamento')
+    .select('*')
     .limit(1)
     .single()
 

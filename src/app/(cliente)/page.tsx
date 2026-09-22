@@ -16,6 +16,16 @@ export default async function VitrinePage() {
 
   const { data: loja } = await supabase.from('lojas').select('*').limit(1).single()
   const lojaAberta = isLojaAbertaAgora(loja)
+  
+  const mensagemFechado = loja?.mensagem_fechado || 'Loja Fechada no Momento'
+
+  const formatarData = (dataStr?: string) => {
+    if (!dataStr) return null;
+    const partes = dataStr.split('-');
+    if (partes.length !== 3) return dataStr;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  const dataRetorno = formatarData(loja?.pausa_fim)
 
   return (
     <main className="min-h-screen bg-background pb-20">
@@ -24,12 +34,20 @@ export default async function VitrinePage() {
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent"></div>
         
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-8 duration-700 relative z-10">
-          <div className="bg-primary text-primary-foreground text-sm md:text-base font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider shadow-md">
-            Sabor Incomparável
-          </div>
+          
           {!lojaAberta ? (
-            <div className="bg-red-600/90 text-white text-sm md:text-base font-black px-8 py-3 rounded-full mb-6 uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.7)] border border-red-400/50 animate-pulse flex items-center gap-2">
-              <span className="text-xl">🛑</span> Loja Fechada no Momento
+            <div className="bg-red-600/90 text-white text-sm md:text-base font-black px-8 py-3 rounded-2xl mb-6 uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.7)] border border-red-400/50 flex flex-col items-center gap-2">
+              <div className="flex items-center gap-2 animate-pulse"><span className="text-xl">🛑</span> {loja.em_pausa ? 'PAUSA PROGRAMADA' : 'LOJA FECHADA'}</div>
+              {mensagemFechado && (
+                <div className="text-sm md:text-base font-medium normal-case tracking-normal text-red-100 bg-red-950/40 px-4 py-2 rounded-lg border border-red-500/30 w-full max-w-sm text-center">
+                  {mensagemFechado}
+                  {dataRetorno && (
+                    <div className="mt-2 pt-2 border-t border-red-500/30 text-xs text-red-200/90 font-semibold tracking-wide">
+                      RETORNAREMOS: {dataRetorno}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-primary text-primary-foreground text-sm md:text-base font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider shadow-md">
@@ -42,9 +60,8 @@ export default async function VitrinePage() {
             <span className="text-background">Burgueria</span>
           </h1>
           <p className="text-lg md:text-xl max-w-lg opacity-90 mt-4">
-            {user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'O hambúrguer artesanal de verdade. Faça login para pedir.'}
             {!lojaAberta 
-              ? 'Voltaremos em breve! Confira nosso cardápio enquanto isso.'
+              ? 'Volte em breve para saborear o melhor hambúrguer artesanal.'
               : user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'O hambúrguer artesanal de verdade. Faça login para pedir.'}
           </p>
         </div>

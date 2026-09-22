@@ -19,8 +19,27 @@ export async function atualizarConfiguracoesLoja(formData: FormData) {
   const horario_automatico = formData.get('horario_automatico') === 'true'
   const hora_abertura = formData.get('hora_abertura') as string || null
   const hora_fechamento = formData.get('hora_fechamento') as string || null
+  
+  // Novos campos: Dias da semana e Pausa (Férias)
+  const diasStr = formData.get('dias_funcionamento') as string
+  let dias_funcionamento = [1,2,3,4,5,6,0]
+  if (diasStr) {
+    try {
+      dias_funcionamento = JSON.parse(diasStr)
+    } catch(e) {}
+  }
 
-  const { error } = await supabase
+  const em_pausa = formData.get('em_pausa') === 'true'
+  const pausa_fim = formData.get('pausa_fim') as string || null
+  const mensagem_fechado = formData.get('mensagem_fechado') as string || null
+
+  const { createClient: createAdminClient } = await import('@supabase/supabase-js')
+  const adminClient = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const { error } = await adminClient
     .from('lojas')
     .update({ 
       nome, 
@@ -28,7 +47,11 @@ export async function atualizarConfiguracoesLoja(formData: FormData) {
       taxa_entrega,
       horario_automatico,
       hora_abertura,
-      hora_fechamento
+      hora_fechamento,
+      dias_funcionamento,
+      em_pausa,
+      pausa_fim,
+      mensagem_fechado
     })
     .eq('id', id)
 
