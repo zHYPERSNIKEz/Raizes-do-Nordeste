@@ -1,8 +1,18 @@
+import { createClient } from '@/lib/supabase/server'
 import { ProdutoForm } from '@/components/admin/ProdutoForm'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function NovoProdutoPage() {
+export default async function NovoProdutoPage() {
+  const supabase = await createClient()
+  const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
+  
+  const { data: todosGrupos } = await supabase
+    .from('complemento_grupos')
+    .select('*')
+    .eq('loja_id', loja?.id)
+    .order('criado_em', { ascending: true })
+
   return (
     <main className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
@@ -15,7 +25,7 @@ export default function NovoProdutoPage() {
         </div>
       </div>
       
-      <ProdutoForm />
+      <ProdutoForm todosGrupos={todosGrupos || []} gruposVinculadosIniciais={[]} />
     </main>
   )
 }

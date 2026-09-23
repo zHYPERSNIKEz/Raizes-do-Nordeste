@@ -20,6 +20,7 @@ export async function salvarProduto(formData: FormData) {
   // JSON strings vindo de campos hidden
   const ingredientes_base = JSON.parse((formData.get('ingredientes_base') as string) || '[]')
   const adicionais = JSON.parse((formData.get('adicionais') as string) || '[]')
+  const gruposVinculados = JSON.parse((formData.get('grupos_vinculados') as string) || '[]')
 
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
   if (!loja) return { success: false, error: 'Loja não encontrada' }
@@ -36,14 +37,29 @@ export async function salvarProduto(formData: FormData) {
     loja_id: loja.id
   }
 
+  let produtoId = id
+
   if (id) {
     // Update
     const { error } = await supabase.from('produtos').update(payload).eq('id', id)
     if (error) return { success: false, error: 'Erro ao atualizar produto' }
   } else {
     // Insert
-    const { error } = await supabase.from('produtos').insert(payload)
+    const { data, error } = await supabase.from('produtos').insert(payload).select('id').single()
     if (error) return { success: false, error: 'Erro ao criar produto' }
+    produtoId = data.id
+  }
+
+  // Atualizar vínculos de complementos
+  if (produtoId) {
+    await supabase.from('produto_complementos').delete().eq('produto_id', produtoId)
+    if (gruposVinculados.length > 0) {
+      const vinculos = gruposVinculados.map((grupo_id: string) => ({
+        produto_id: produtoId,
+        grupo_id
+      }))
+      await supabase.from('produto_complementos').insert(vinculos)
+    }
   }
 
   revalidatePath('/admin/produtos')
@@ -75,4 +91,13 @@ export async function excluirProduto(id: string) {
   revalidatePath('/admin/produtos')
   revalidatePath('/')
   return { success: true }
+}
+
+export async function vincularGrupoEmMassa(produtoIds: string[], grupoId: string) {
+  const supabase = await createClient();
+  const vinculos = produtoIds.map(pid => ({ produto_id: pid, grupo_id: grupoId }));
+  const { error } = await supabase.from('produto_complementos').upsert(vinculos, { onConflict: 'produto_id,grupo_id' });
+  if (error) return { success: false, error: error.message };
+  revalidatePath('/admin/produtos');
+  return { success: true };
 }

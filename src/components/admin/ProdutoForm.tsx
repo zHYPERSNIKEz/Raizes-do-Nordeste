@@ -9,13 +9,29 @@ import imageCompression from 'browser-image-compression'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
-export function ProdutoForm({ produto }: { produto?: any }) {
+export function ProdutoForm({ 
+  produto, 
+  todosGrupos = [], 
+  gruposVinculadosIniciais = [] 
+}: { 
+  produto?: any, 
+  todosGrupos?: any[], 
+  gruposVinculadosIniciais?: string[] 
+}) {
   const [ingredientes, setIngredientes] = useState<string[]>(produto?.ingredientes_base || [])
   const [adicionais, setAdicionais] = useState<{nome: string, preco: number}[]>(produto?.adicionais || [])
   
   const [novoIngrediente, setNovoIngrediente] = useState('')
   const [novoAddNome, setNovoAddNome] = useState('')
   const [novoAddPreco, setNovoAddPreco] = useState('')
+  
+  const [gruposVinculados, setGruposVinculados] = useState<string[]>(gruposVinculadosIniciais)
+
+  const toggleGrupo = (grupoId: string) => {
+    setGruposVinculados(prev => 
+      prev.includes(grupoId) ? prev.filter(id => id !== grupoId) : [...prev, grupoId]
+    )
+  }
 
   const [imagemUrl, setImagemUrl] = useState(produto?.imagem_url || '')
   const [isUploading, setIsUploading] = useState(false)
@@ -97,6 +113,7 @@ export function ProdutoForm({ produto }: { produto?: any }) {
       <input type="hidden" name="id" value={produto?.id || ''} />
       <input type="hidden" name="ingredientes_base" value={JSON.stringify(ingredientes)} />
       <input type="hidden" name="adicionais" value={JSON.stringify(adicionais)} />
+      <input type="hidden" name="grupos_vinculados" value={JSON.stringify(gruposVinculados)} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="space-y-4">
@@ -215,8 +232,53 @@ export function ProdutoForm({ produto }: { produto?: any }) {
         {/* Coluna 2: Customizações */}
         <div className="space-y-6 bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
           
-          {/* Ingredientes Base */}
+          {/* Grupos de Escolha (Complementos) */}
           <div>
+            <h4 className="text-sm font-bold text-slate-300 mb-2 flex items-center justify-between">
+              <span>Grupos de Escolha</span>
+              <span className="text-[10px] bg-brand/10 text-brand px-2 py-0.5 rounded border border-brand/20">NOVO</span>
+            </h4>
+            <p className="text-xs text-slate-500 mb-3">Marque as opções que o cliente terá ao pedir este produto.</p>
+            
+            {todosGrupos && todosGrupos.length > 0 ? (
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {todosGrupos.map((grupo: any) => {
+                  const isChecked = gruposVinculados.includes(grupo.id)
+                  return (
+                    <label 
+                      key={grupo.id} 
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        isChecked ? 'bg-brand/10 border-brand/40' : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <input 
+                        type="checkbox" 
+                        checked={isChecked}
+                        onChange={() => toggleGrupo(grupo.id)}
+                        className="w-4 h-4 rounded border-slate-700 text-brand focus:ring-brand bg-slate-950" 
+                      />
+                      <div className="flex-1">
+                        <span className={`text-sm font-medium ${isChecked ? 'text-brand' : 'text-slate-300'}`}>
+                          {grupo.nome}
+                        </span>
+                        {grupo.obrigatorio && (
+                          <span className="ml-2 text-[10px] text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded">Obrigatório</span>
+                        )}
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-xs text-slate-500 bg-slate-900 p-3 rounded border border-slate-800 text-center">
+                Você ainda não criou nenhum Grupo de Escolha. <br/>
+                <a href="/admin/complementos" className="text-brand hover:underline mt-1 inline-block">Criar na Biblioteca</a>
+              </div>
+            )}
+          </div>
+
+          {/* Ingredientes Base */}
+          <div className="pt-4 border-t border-slate-800">
             <h4 className="text-sm font-bold text-slate-300 mb-2 flex items-center gap-2">
               Ingredientes Base
               <span className="text-xs font-normal text-slate-500">(O cliente pode remover)</span>

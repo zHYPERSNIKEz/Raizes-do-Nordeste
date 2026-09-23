@@ -16,6 +16,21 @@ export default async function EditarProdutoPage({ params }: { params: Promise<{ 
 
   if (!produto) notFound()
 
+  // Buscar todos os grupos criados pela loja
+  const { data: todosGrupos } = await supabase
+    .from('complemento_grupos')
+    .select('*')
+    .eq('loja_id', produto.loja_id)
+    .order('criado_em', { ascending: true })
+
+  // Buscar quais grupos já estão vinculados a este produto
+  const { data: vinculados } = await supabase
+    .from('produto_complementos')
+    .select('grupo_id')
+    .eq('produto_id', id)
+    
+  const gruposVinculadosIds = vinculados?.map(v => v.grupo_id) || []
+
   return (
     <main className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
@@ -28,7 +43,11 @@ export default async function EditarProdutoPage({ params }: { params: Promise<{ 
         </div>
       </div>
       
-      <ProdutoForm produto={produto} />
+      <ProdutoForm 
+        produto={produto} 
+        todosGrupos={todosGrupos || []} 
+        gruposVinculadosIniciais={gruposVinculadosIds} 
+      />
     </main>
   )
 }
