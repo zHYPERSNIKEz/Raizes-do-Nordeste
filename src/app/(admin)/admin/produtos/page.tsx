@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { ProdutosTableClient } from '@/components/admin/ProdutosTableClient'
+import { ImportarCardapioModal } from '@/components/admin/ImportarCardapioModal'
 
 export default async function ProdutosPage() {
   const supabase = await createClient()
@@ -42,6 +43,7 @@ export default async function ProdutosPage() {
           <p className="text-slate-400 mt-1">Gerencie o seu cardápio, preços e adicionais.</p>
         </div>
         <div className="flex gap-3">
+          <ImportarCardapioModal lojaId={loja?.id || ''} />
           <Link href="/admin/complementos">
             <Button variant="secondary" className="bg-slate-800 text-slate-200 hover:bg-slate-700 gap-2 border border-slate-700">
               <span className="text-base">🧩</span> Grupos e Adicionais

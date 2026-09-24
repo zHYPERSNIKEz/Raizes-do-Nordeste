@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -14,6 +14,14 @@ type ProdutoData = {
   imagem_url?: string
   ingredientes_base: string[]
   adicionais: { nome: string, preco: number }[]
+  grupos?: {
+    id: string
+    nome: string
+    obrigatorio: boolean
+    min_escolhas: number
+    max_escolhas: number
+    itens: { id: string, nome: string, preco: number }[]
+  }[]
 }
 
 export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
@@ -22,6 +30,7 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
   
   const [removidos, setRemovidos] = useState<string[]>([])
   const [adicionaisSelecionados, setAdicionaisSelecionados] = useState<Record<string, number>>({})
+  const [escolhasGrupos, setEscolhasGrupos] = useState<Record<string, string[]>>({})
   const [quantidade, setQuantidade] = useState(1)
 
   const toggleRemocao = (ingrediente: string) => {
@@ -42,15 +51,62 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
     }))
   }
 
+  const toggleEscolhaGrupo = (grupoId: string, itemId: string, maxEscolhas: number) => {
+    setEscolhasGrupos(prev => {
+      const escolhasAtuais = prev[grupoId] || []
+      
+      // Se for rádio (max = 1)
+      if (maxEscolhas === 1) {
+        return { ...prev, [grupoId]: [itemId] }
+      }
+      
+      // Se for checkbox e já está selecionado, remove
+      if (escolhasAtuais.includes(itemId)) {
+        return { ...prev, [grupoId]: escolhasAtuais.filter(id => id !== itemId) }
+      }
+      
+      // Se for checkbox e não atingiu o limite, adiciona
+      if (escolhasAtuais.length < maxEscolhas) {
+        return { ...prev, [grupoId]: [...escolhasAtuais, itemId] }
+      }
+      
+      // Se atingiu o limite, não faz nada
+      return prev
+    })
+  }
+
   const totalAdicionaisUnidade = produto.adicionais.reduce((sum, add) => {
     const qtdAdd = adicionaisSelecionados[add.nome] || 0
     return sum + (add.preco * qtdAdd)
   }, 0)
+
+  // Somar preço das escolhas dos grupos
+  const totalGruposUnidade = (produto.grupos || []).reduce((sum, grupo) => {
+    const escolhas = escolhasGrupos[grupo.id] || []
+    const valorEscolhas = escolhas.reduce((subSum, itemId) => {
+      const item = grupo.itens.find(i => i.id === itemId)
+      return subSum + (item ? Number(item.preco) : 0)
+    }, 0)
+    return sum + valorEscolhas
+  }, 0)
   
-  const precoTotalUnidade = produto.preco + totalAdicionaisUnidade
+  const precoTotalUnidade = produto.preco + totalAdicionaisUnidade + totalGruposUnidade
   const precoFinal = precoTotalUnidade * quantidade
 
   const handleAdicionar = () => {
+    // Validação de grupos obrigatórios
+    if (produto.grupos) {
+      for (const grupo of produto.grupos) {
+        const escolhas = escolhasGrupos[grupo.id] || []
+        if (grupo.obrigatorio && escolhas.length < grupo.min_escolhas) {
+          toast.error(`Escolha obrigatória: ${grupo.nome}`, {
+            description: `Selecione pelo menos ${grupo.min_escolhas} opção.`
+          })
+          return
+        }
+      }
+    }
+
     const arrayAdicionais = Object.entries(adicionaisSelecionados)
       .filter(([_, qtd]) => qtd > 0)
       .map(([nome, qtd]) => {
@@ -61,6 +117,23 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
           quantidade: qtd
         }
       })
+
+    // Adicionar as escolhas de grupos como se fossem adicionais no carrinho
+    if (produto.grupos) {
+      for (const grupo of produto.grupos) {
+        const escolhas = escolhasGrupos[grupo.id] || []
+        for (const itemId of escolhas) {
+          const item = grupo.itens.find(i => i.id === itemId)
+          if (item) {
+            arrayAdicionais.push({
+              nome: `${grupo.nome}: ${item.nome}`,
+              preco: Number(item.preco),
+              quantidade: 1
+            })
+          }
+        }
+      }
+    }
 
     addItem({
       produtoId: produto.id,
@@ -80,6 +153,81 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
 
   return (
     <div className="space-y-8">
+      
+      {produto.grupos && produto.grupos.length > 0 && (
+        <div className="space-y-6">
+          {produto.grupos.map(grupo => {
+            const escolhasAtuais = escolhasGrupos[grupo.id] || []
+            const atingiuMaximo = escolhasAtuais.length >= grupo.max_escolhas
+            const isRadio = grupo.max_escolhas === 1
+
+            return (
+              <section key={grupo.id} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-border">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                      {grupo.nome}
+                      {grupo.obrigatorio && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase font-bold tracking-wider">Obrigatório</span>}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {isRadio 
+                        ? 'Escolha 1 opção' 
+                        : `Escolha ${grupo.min_escolhas === grupo.max_escolhas ? grupo.max_escolhas : `de ${grupo.min_escolhas} até ${grupo.max_escolhas}`} opções`
+                      }
+                    </p>
+                  </div>
+                  {!isRadio && (
+                    <span className="text-xs font-medium px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
+                      {escolhasAtuais.length} / {grupo.max_escolhas}
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-2 mt-4">
+                  {grupo.itens.map(item => {
+                    const isSelecionado = escolhasAtuais.includes(item.id)
+                    const desabilitado = !isSelecionado && atingiuMaximo && !isRadio
+
+                    return (
+                      <label 
+                        key={item.id}
+                        className={`flex justify-between items-center p-3 rounded-lg border transition-all cursor-pointer ${
+                          isSelecionado 
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
+                            : 'border-border bg-card hover:border-primary/50'
+                        } ${desabilitado ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={(e) => {
+                          if (desabilitado) e.preventDefault()
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type={isRadio ? 'radio' : 'checkbox'} 
+                            name={`grupo-${grupo.id}`}
+                            checked={isSelecionado}
+                            onChange={() => !desabilitado && toggleEscolhaGrupo(grupo.id, item.id, grupo.max_escolhas)}
+                            disabled={desabilitado}
+                            className={`w-5 h-5 text-primary border-slate-300 focus:ring-primary ${isRadio ? 'rounded-full' : 'rounded'}`}
+                          />
+                          <span className={`font-medium ${isSelecionado ? 'text-foreground' : 'text-foreground/80'}`}>
+                            {item.nome}
+                          </span>
+                        </div>
+                        {Number(item.preco) > 0 && (
+                          <span className="text-sm font-semibold text-primary">
+                            + R$ {Number(item.preco).toFixed(2).replace('.', ',')}
+                          </span>
+                        )}
+                      </label>
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })}
+        </div>
+      )}
+
       {produto.ingredientes_base.length > 0 && (
         <section>
           <h3 className="font-bold text-lg text-foreground mb-3">O que vem no lanche?</h3>
