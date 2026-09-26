@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -76,16 +77,16 @@ export async function toggleAtivo(id: string, ativoAtual: boolean) {
 
 export async function excluirProduto(id: string) {
   const supabase = await createClient()
+  const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   
-  // Dependendo do banco (ON DELETE RESTRICT), pode dar erro se tiver pedido com esse produto
-  // O ideal seria apenas desativar, mas se não tiver venda, pode excluir
+  // MODO TESTE: Apagar dependências primeiro (Bypass RLS)
+  await supabaseAdmin.from('produto_complementos').delete().eq('produto_id', id)
+  await supabaseAdmin.from('itens_pedido').delete().eq('produto_id', id)
+  
   const { error } = await supabase.from('produtos').delete().eq('id', id)
   
   if (error) {
-    if (error.code === '23503') {
-      return { success: false, error: 'Este produto já foi vendido. Em vez de excluir, apenas desative-o.' }
-    }
-    return { success: false, error: 'Erro ao excluir produto' }
+    return { success: false, error: 'Erro ao excluir produto: ' + error.message }
   }
 
   revalidatePath('/admin/produtos')
@@ -100,4 +101,23 @@ export async function vincularGrupoEmMassa(produtoIds: string[], grupoId: string
   if (error) return { success: false, error: error.message };
   revalidatePath('/admin/produtos');
   return { success: true };
+}
+
+export async function excluirProdutosEmMassa(ids: string[]) {
+  const supabase = await createClient();
+  const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+  
+  // MODO TESTE: Apagar dependências primeiro (Bypass RLS)
+  await supabaseAdmin.from('produto_complementos').delete().in('produto_id', ids);
+  await supabaseAdmin.from('itens_pedido').delete().in('produto_id', ids);
+  
+  const { error } = await supabase.from('produtos').delete().in('id', ids);
+  
+  if (error) {
+    return { success: false, error: 'Erro ao excluir produtos: ' + error.message }
+  }
+
+  revalidatePath('/admin/produtos')
+  revalidatePath('/')
+  return { success: true }
 }

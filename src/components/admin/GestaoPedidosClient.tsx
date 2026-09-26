@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -135,10 +135,10 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
           ))}
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-slate-950 text-slate-400 text-xs uppercase">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+          <div className="overflow-x-auto overflow-y-auto max-h-[75vh]">
+            <table className="w-full text-left text-sm text-slate-300 relative">
+              <thead className="bg-slate-950 text-slate-400 text-xs uppercase sticky top-0 z-10 shadow-md">
                 <tr>
                   <th className="px-4 py-3">ID / Hora</th>
                   <th className="px-4 py-3">Cliente</th>

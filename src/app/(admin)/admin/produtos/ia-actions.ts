@@ -66,33 +66,67 @@ Regras:
       required: ["categorias", "grupos_complementos"]
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            ...images.map(img => ({ inlineData: { data: img.data, mimeType: img.mimeType } })),
-            { text: prompt }
-          ]
-        }
-      ],
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: schema
-      }
-    })
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    let lastError: any;
 
-    const text = response.text
-    if (!text) {
-      throw new Error("Resposta da IA veio vazia.")
+    while (attempt < MAX_RETRIES) {
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                ...images.map(img => ({ inlineData: { data: img.data, mimeType: img.mimeType } })),
+                { text: prompt }
+              ]
+            }
+          ],
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: schema
+          }
+        });
+
+        const text = response.text;
+        if (!text) {
+          throw new Error("Resposta da IA veio vazia.");
+        }
+
+        const data = JSON.parse(text);
+        return { success: true, data };
+      } catch (err: any) {
+        lastError = err;
+        console.error(`Tentativa ${attempt + 1} falhou:`, err.message || err);
+        attempt++;
+        
+        if (attempt < MAX_RETRIES) {
+          const delay = Math.pow(2, attempt) * 1000;
+          console.log(`Aguardando ${delay}ms antes da próxima tentativa...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          break;
+        }
+      }
     }
 
-    const data = JSON.parse(text)
-    return { success: true, data }
+    throw lastError;
   } catch (error: any) {
-    console.error("Erro no Gemini:", error)
-    return { success: false, error: error.message || 'Falha ao analisar a imagem' }
+    console.error("Erro final no Gemini:", error);
+    let errorMessage = error.message || 'Falha ao analisar a imagem';
+    
+    if (errorMessage.includes('{')) {
+      try {
+        const parsed = JSON.parse(errorMessage.substring(errorMessage.indexOf('{')));
+        if (parsed.error && parsed.error.message) {
+          errorMessage = parsed.error.message;
+        }
+      } catch (e) {
+      }
+    }
+
+    return { success: false, error: errorMessage };
   }
 }
 
@@ -103,7 +137,6 @@ export async function salvarDadosImportados(lojaId: string, dados: any) {
   try {
     const supabase = await createClient()
 
-    // 1. Inserir Grupos
     const { grupos_complementos, categorias } = dados
     if (grupos_complementos && grupos_complementos.length > 0) {
       for (const g of grupos_complementos) {
@@ -112,8 +145,7 @@ export async function salvarDadosImportados(lojaId: string, dados: any) {
           nome: g.nome,
           obrigatorio: g.obrigatorio || false,
           min_escolhas: g.min_escolhas || 0,
-          max_escolhas: g.max_escolhas || 1,
-          ativo: true
+          max_escolhas: g.max_escolhas || 1
         }).select().single()
 
         if (gError) throw new Error("Erro ao salvar grupo: " + gError.message)
@@ -123,7 +155,6 @@ export async function salvarDadosImportados(lojaId: string, dados: any) {
             grupo_id: grupoData.id,
             nome: i.nome,
             preco: i.preco || 0,
-            ativo: true,
             ordem: index
           }))
           const { error: iError } = await supabase.from('complemento_itens').insert(itensToInsert)
@@ -132,7 +163,6 @@ export async function salvarDadosImportados(lojaId: string, dados: any) {
       }
     }
 
-    // 2. Inserir Produtos
     if (categorias && categorias.length > 0) {
       for (const cat of categorias) {
         if (!cat.produtos) continue;

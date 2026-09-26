@@ -1,22 +1,34 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Edit, Link as LinkIcon, X } from 'lucide-react'
+import { Eye, EyeOff, Edit, Link as LinkIcon, X, Search, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ToggleAtivoButton, ExcluirProdutoButton } from '@/components/admin/ProdutoBotoes'
 import { toast } from 'sonner'
-import { vincularGrupoEmMassa } from '@/app/(admin)/admin/produtos/actions'
+import { vincularGrupoEmMassa, excluirProdutosEmMassa } from '@/app/(admin)/admin/produtos/actions'
 
 export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[], todosGrupos: any[] }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [modalOpen, setModalOpen] = useState(false)
   const [targetProductIds, setTargetProductIds] = useState<string[]>([]) // Quais produtos vão receber o grupo
   const [isLinking, setIsLinking] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterCategoria, setFilterCategoria] = useState('')
+
+  const categoriasUnicas = Array.from(new Set(produtos.map(p => p.categoria).filter(Boolean))) as string[]
+
+  const filteredProdutos = produtos.filter(p => {
+    const matchSearch = p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        p.categoria?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchCategoria = filterCategoria ? p.categoria === filterCategoria : true
+    return matchSearch && matchCategoria
+  })
 
   const toggleAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(produtos.map(p => p.id))
+      setSelectedIds(filteredProdutos.map(p => p.id))
     } else {
       setSelectedIds([])
     }
@@ -53,6 +65,22 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
     setIsLinking(false)
   }
 
+  
+  const handleMassDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm('Tem certeza que deseja apagar ' + selectedIds.length + ' produto(s)? Esta ação não pode ser desfeita.')) return
+
+    setIsDeleting(true)
+    const res = await excluirProdutosEmMassa(selectedIds)
+    if (res.success) {
+      import('sonner').then(s => s.toast.success(selectedIds.length + ' produto(s) apagado(s) com sucesso!'))
+      setSelectedIds([])
+    } else {
+      import('sonner').then(s => s.toast.error('Erro: ' + res.error))
+    }
+    setIsDeleting(false)
+  }
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
       {/* Barra de Ações em Massa */}
@@ -62,6 +90,10 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
             {selectedIds.length} produto(s) selecionado(s)
           </span>
           <div className="flex gap-2">
+            
+            <Button size="sm" onClick={handleMassDelete} disabled={isDeleting} className="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white border border-red-600/30 gap-2 transition-colors">
+              <X size={14} /> {isDeleting ? 'Apagando...' : 'Apagar Selecionados'}
+            </Button>
             <Button size="sm" onClick={openMassLinkModal} className="bg-brand text-white hover:bg-orange-600 gap-2">
               <LinkIcon size={14} /> Vincular Grupo aos Selecionados
             </Button>
@@ -72,15 +104,43 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-slate-950 text-slate-400 text-xs uppercase">
+      
+      {/* Barra de Busca e Filtro */}
+      <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row gap-4 items-center bg-slate-950/50">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+          <input
+            type="text"
+            placeholder="Buscar por nome ou categoria..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div className="relative w-full sm:w-64 shrink-0">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+          <select
+            value={filterCategoria}
+            onChange={(e) => setFilterCategoria(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand appearance-none"
+          >
+            <option value="">Todas as Categorias</option>
+            {categoriasUnicas.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto max-h-[70vh]">
+        <table className="w-full text-left text-sm text-slate-300 relative">
+          <thead className="bg-slate-950 text-slate-400 text-xs uppercase sticky top-0 z-10 shadow-md">
             <tr>
               <th className="px-6 py-4 w-10">
                 <input 
                   type="checkbox" 
                   className="rounded border-slate-700 bg-slate-900 text-brand focus:ring-brand"
-                  checked={selectedIds.length === produtos.length && produtos.length > 0}
+                  checked={selectedIds.length === filteredProdutos.length && filteredProdutos.length > 0}
                   onChange={toggleAll}
                 />
               </th>
@@ -93,7 +153,7 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
-            {produtos?.map((p) => {
+            {filteredProdutos?.map((p) => {
               const isChecked = selectedIds.includes(p.id)
               return (
                 <tr key={p.id} className={`hover:bg-slate-800/30 ${isChecked ? 'bg-brand/5' : ''}`}>
@@ -143,7 +203,7 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
               )
             })}
             
-            {(!produtos || produtos.length === 0) && (
+            {(!filteredProdutos || filteredProdutos.length === 0) && (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
                   Nenhum produto cadastrado na loja.

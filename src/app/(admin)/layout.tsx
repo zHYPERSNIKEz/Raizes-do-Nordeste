@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, ChefHat, Package, ClipboardList, Users, Settings, Wallet, ArrowLeft } from 'lucide-react'
@@ -40,8 +40,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="dark min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-        <div className="p-6 font-black text-xl text-brand border-b border-slate-800">
+<aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 md:sticky md:top-0 md:h-screen md:overflow-y-auto">
+        <div className="p-6 font-black text-xl text-brand border-b border-slate-800 shrink-0">
           Admin Panel
         </div>
         

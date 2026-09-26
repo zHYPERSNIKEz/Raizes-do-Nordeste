@@ -13,6 +13,9 @@ export default async function NovoProdutoPage() {
     .eq('loja_id', loja?.id)
     .order('criado_em', { ascending: true })
 
+  const { data: categorias } = await supabase.from('produtos').select('categoria').eq('loja_id', loja?.id)
+  const categoriasExistentes = Array.from(new Set(categorias?.map(c => c.categoria).filter(Boolean))) as string[]
+
   return (
     <main className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
@@ -25,7 +28,9 @@ export default async function NovoProdutoPage() {
         </div>
       </div>
       
-      <ProdutoForm todosGrupos={todosGrupos || []} gruposVinculadosIniciais={[]} />
+      <ProdutoForm todosGrupos={todosGrupos || []} gruposVinculadosIniciais={[]}
+        categoriasExistentes={categoriasExistentes}
+      />
     </main>
   )
 }

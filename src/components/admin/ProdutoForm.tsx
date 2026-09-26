@@ -12,12 +12,18 @@ import { toast } from 'sonner'
 export function ProdutoForm({ 
   produto, 
   todosGrupos = [], 
-  gruposVinculadosIniciais = [] 
+  gruposVinculadosIniciais = [],
+  categoriasExistentes = []
 }: { 
   produto?: any, 
   todosGrupos?: any[], 
-  gruposVinculadosIniciais?: string[] 
+  gruposVinculadosIniciais?: string[],
+  categoriasExistentes?: string[]
 }) {
+    // Merged standard categories + existing categories from DB
+  const standardCategorias = ['Artesanais', 'Smash', 'Bebidas', 'Porções', 'Sobremesas'];
+  const allCategorias = Array.from(new Set([...standardCategorias, ...(categoriasExistentes || [])]));
+
   const [ingredientes, setIngredientes] = useState<string[]>(produto?.ingredientes_base || [])
   const [adicionais, setAdicionais] = useState<{nome: string, preco: number}[]>(produto?.adicionais || [])
   
@@ -152,17 +158,20 @@ export function ProdutoForm({
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
-              <select 
+              
+              <input 
                 name="categoria" 
-                defaultValue={produto?.categoria || 'Artesanais'}
+                list="categorias-list"
+                defaultValue={produto?.categoria || ''}
+                placeholder="Ex: Artesanais, Smash..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand"
-              >
-                <option value="Artesanais">Artesanais</option>
-                <option value="Smash">Smash</option>
-                <option value="Bebidas">Bebidas</option>
-                <option value="Porções">Porções</option>
-                <option value="Sobremesas">Sobremesas</option>
-              </select>
+              />
+              <datalist id="categorias-list">
+                {allCategorias.map(cat => (
+                  <option key={cat} value={cat} />
+                ))}
+              </datalist>
+
             </div>
           </div>
           

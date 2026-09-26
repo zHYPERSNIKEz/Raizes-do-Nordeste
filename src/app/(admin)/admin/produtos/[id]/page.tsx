@@ -31,6 +31,9 @@ export default async function EditarProdutoPage({ params }: { params: Promise<{ 
     
   const gruposVinculadosIds = vinculados?.map(v => v.grupo_id) || []
 
+  const { data: categorias } = await supabase.from('produtos').select('categoria').eq('loja_id', produto.loja_id)
+  const categoriasExistentes = Array.from(new Set(categorias?.map(c => c.categoria).filter(Boolean))) as string[]
+
   return (
     <main className="p-6 md:p-10 max-w-6xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
@@ -46,7 +49,8 @@ export default async function EditarProdutoPage({ params }: { params: Promise<{ 
       <ProdutoForm 
         produto={produto} 
         todosGrupos={todosGrupos || []} 
-        gruposVinculadosIniciais={gruposVinculadosIds} 
+        gruposVinculadosIniciais={gruposVinculadosIds}
+        categoriasExistentes={categoriasExistentes}
       />
     </main>
   )
