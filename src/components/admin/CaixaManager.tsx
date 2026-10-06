@@ -51,8 +51,6 @@ export function CaixaManager({ lojaId, caixaAtual, pedidos, movimentacoes }: any
 
   const handleFecharCaixa = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!confirm('Deseja realmente fechar o caixa agora?')) return
-    
     setLoading(true)
     const res = await fecharCaixa(caixaAtual.id, totais.saldoFinal, parseFloat(valorReal) || 0, obsFechamento)
     if (res.success) {

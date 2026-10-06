@@ -39,7 +39,7 @@ export default async function PedidosPage() {
       itens_pedido ( quantidade, preco_unitario, observacao, produtos(nome) )
     `)
     .eq('loja_id', loja.id)
-    // Traz pedidos que nÃ£o estÃ£o finalizados/cancelados OU que foram criados hoje
+    // Traz pedidos que não estÃ£o finalizados/cancelados OU que foram criados hoje
     .or(`status.in.(NA_FILA,PREPARANDO,PRONTO,DESPACHADO),criado_em.gte.${hoje.toISOString()}`)
     .order('criado_em', { ascending: false })
 
@@ -48,10 +48,10 @@ export default async function PedidosPage() {
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
-            ðŸ“‹ GestÃ£o de Pedidos (Caixa)
+            Gestão de Pedidos (Caixa)
           </h1>
           <p className="text-slate-400 mt-2">
-            Acompanhe todos os pedidos da loja, gerencie entregas e confirmaÃ§Ã£o de pagamentos.
+            Acompanhe todos os pedidos da loja, gerencie entregas e confirmação de pagamentos.
           </p>
         </header>
 

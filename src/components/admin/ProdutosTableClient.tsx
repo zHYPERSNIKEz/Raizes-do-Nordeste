@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Edit, Link as LinkIcon, X, Search, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -16,6 +16,8 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
   const [isDeleting, setIsDeleting] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategoria, setFilterCategoria] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   const categoriasUnicas = Array.from(new Set(produtos.map(p => p.categoria).filter(Boolean))) as string[]
 
@@ -25,6 +27,14 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
     const matchCategoria = filterCategoria ? p.categoria === filterCategoria : true
     return matchSearch && matchCategoria
   })
+
+  // Reseta a página para 1 quando o filtro muda
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filterCategoria])
+
+  const totalPages = Math.ceil(filteredProdutos.length / itemsPerPage)
+  const paginatedProdutos = filteredProdutos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   const toggleAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -153,7 +163,7 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
-            {filteredProdutos?.map((p) => {
+            {paginatedProdutos?.map((p) => {
               const isChecked = selectedIds.includes(p.id)
               return (
                 <tr key={p.id} className={`hover:bg-slate-800/30 ${isChecked ? 'bg-brand/5' : ''}`}>
@@ -212,7 +222,36 @@ export function ProdutosTableClient({ produtos, todosGrupos }: { produtos: any[]
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+        
+        {/* Controles de Paginação */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <div className="text-sm text-slate-400">
+              Mostrando {((currentPage - 1) * itemsPerPage) + 1} até {Math.min(currentPage * itemsPerPage, filteredProdutos.length)} de {filteredProdutos.length} produtos
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-slate-700 bg-slate-800 text-slate-300 hover:text-white"
+              >
+                Anterior
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="border-slate-700 bg-slate-800 text-slate-300 hover:text-white"
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        )}
 
       {/* Modal de Vinculação */}
       {modalOpen && (

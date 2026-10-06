@@ -104,7 +104,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
     return p.status === filtroStatus
   })
 
-  // FunÃ§Ãµes de AÃ§Ã£o RÃ¡pida
+  // FunÃ§Ãµes de Ação RÃ¡pida
   const handleAtualizarStatus = async (id: string, novoStatus: string) => {
     await atualizarStatusPedido(id, novoStatus)
   }
@@ -119,23 +119,99 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
       {/* Lista de Pedidos (Tabela / Cards) */}
       <div className="flex-1">
         {/* Filtros */}
-        <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-          {['ATIVOS', 'TODOS', 'NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO', 'FINALIZADO', 'CANCELADO'].map(status => (
-            <button
-              key={status}
-              onClick={() => setFiltroStatus(status)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                filtroStatus === status 
-                  ? 'bg-brand text-white' 
-                  : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-              }`}
-            >
-              {status.replace('_', ' ')}
-            </button>
-          ))}
-        </div>
+        
+          {/* Filtros */}
+          <div className="mb-6">
+            {/* Visualização Desktop (Botões) */}
+            <div className="hidden md:flex gap-2 overflow-x-auto pb-2">
+              {['ATIVOS', 'TODOS', 'NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO', 'FINALIZADO', 'CANCELADO'].map(status => (
+                <button
+                  key={status}
+                  onClick={() => setFiltroStatus(status)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                    filtroStatus === status 
+                      ? 'bg-brand text-brand-foreground shadow-md' 
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  {status.replace('_', ' ')}
+                </button>
+              ))}
+            </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+            {/* Visualização Mobile (Dropdown Select Nativo) */}
+            <div className="md:hidden">
+              <label className="block text-xs text-slate-400 mb-1 font-medium">Filtrar Pedidos</label>
+              <div className="relative">
+                <select
+                  value={filtroStatus}
+                  onChange={(e) => setFiltroStatus(e.target.value)}
+                  className="w-full appearance-none bg-slate-800 border border-slate-700 text-slate-200 py-3 pl-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand font-medium"
+                >
+                  <option value="ATIVOS">Apenas Pedidos Ativos</option>
+                  <option value="TODOS">Todos os Pedidos</option>
+                  <option value="NA_FILA">Na Fila</option>
+                  <option value="PREPARANDO">Preparando</option>
+                  <option value="PRONTO">Pronto</option>
+                  <option value="DESPACHADO">Despachado</option>
+                  <option value="FINALIZADO">Finalizado</option>
+                  <option value="CANCELADO">Cancelado</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        
+      {/* Visualização Mobile (Cards) */}
+      <div className="md:hidden space-y-4 pb-10">
+        {pedidosFiltrados.length > 0 ? (
+          pedidosFiltrados.map((pedido) => (
+            <div key={pedido.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col gap-4 relative overflow-hidden">
+              {/* Faixa lateral decorativa baseada no status */}
+              <div className={`absolute left-0 top-0 bottom-0 w-1 ${pedido.status === 'NA_FILA' ? 'bg-yellow-500' : pedido.status === 'PREPARANDO' ? 'bg-blue-500' : pedido.status === 'PRONTO' ? 'bg-orange-500' : 'bg-slate-700'}`}></div>
+              
+              <div className="flex justify-between items-start pl-2">
+                <div>
+                  <div className="font-black text-xl text-white">#{pedido.numero_pedido}</div>
+                  <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                    <Clock size={14} />
+                    {new Date(pedido.criado_em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                <StatusBadge status={pedido.status} />
+              </div>
+              
+              <div className="border-t border-b border-slate-800/50 py-3 pl-2">
+                <div className="font-bold text-slate-200 text-base">{pedido.cliente_nome}</div>
+                <div className="text-sm text-slate-400 mt-2 flex justify-between items-center">
+                   <ConsumoBadge tipo={pedido.tipo_consumo} mesa={pedido.mesa} />
+                   <span className="font-black text-lg text-emerald-400">R$ {Number(pedido.total).toFixed(2).replace('.', ',')}</span>
+                </div>
+              </div>
+              
+              <div className="pl-2">
+                <button 
+                  onClick={() => setPedidoSelecionado(pedido)}
+                  className="w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-white py-3 rounded-xl text-sm font-bold transition-all text-center border border-slate-700 flex items-center justify-center gap-2"
+                >
+                  <Eye size={16} /> Ver Detalhes do Pedido
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12 bg-slate-900/50 rounded-3xl border border-slate-800 border-dashed">
+            <p className="text-slate-500 font-medium">Nenhum pedido encontrado aqui.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Visualização Desktop (Tabela) */}
+      <div className="hidden md:flex bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex-col">
           <div className="overflow-x-auto overflow-y-auto max-h-[75vh]">
             <table className="w-full text-left text-sm text-slate-300 relative">
               <thead className="bg-slate-950 text-slate-400 text-xs uppercase sticky top-0 z-10 shadow-md">
@@ -146,7 +222,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3 text-right">Total</th>
                   <th className="px-4 py-3 text-center">Pagamento</th>
-                  <th className="px-4 py-3 text-center">AÃ§Ã£o</th>
+                  <th className="px-4 py-3 text-center">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
@@ -296,7 +372,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
             </div>
           </div>
 
-          {/* AÃ§Ãµes Inferiores */}
+          {/* Ações Inferiores */}
           <div className="mt-6 pt-4 border-t border-slate-800 space-y-2">
             <h4 className="text-xs text-slate-500 mb-2 font-semibold">AvanÃ§ar Status:</h4>
             
@@ -327,7 +403,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
               </button>
             )}
             
-            {/* Finalizar pode vir de Pronto (se nÃ£o for delivery) ou de Despachado (se for delivery) */}
+            {/* Finalizar pode vir de Pronto (se não for delivery) ou de Despachado (se for delivery) */}
             {((pedidoSelecionado.status === 'PRONTO' && pedidoSelecionado.tipo_consumo !== 'DELIVERY') || 
                pedidoSelecionado.status === 'DESPACHADO') && (
               <button 
