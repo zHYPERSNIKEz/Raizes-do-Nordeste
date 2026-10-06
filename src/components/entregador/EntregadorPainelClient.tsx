@@ -39,12 +39,12 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           filter: `loja_id=eq.${lojaId}`
         },
         async (payload) => {
-          if (payload.eventType === 'UPDATE') {
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
             const pedidoAtualizado = payload.new as Pedido
             
             // Se o pedido no for DELIVERY ou se for FINALIZADO/CANCELADO, remove da lista
             if (pedidoAtualizado.tipo_consumo !== 'DELIVERY' || 
-                !['PRONTO', 'DESPACHADO'].includes(pedidoAtualizado.status)) {
+                !['NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO'].includes(pedidoAtualizado.status)) {
               setPedidos(prev => prev.filter(p => p.id !== pedidoAtualizado.id))
               return
             }
@@ -101,6 +101,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
     window.open(url, '_blank')
   }
 
+  const naCozinha = pedidos.filter(p => ['NA_FILA', 'PREPARANDO'].includes(p.status))
   const aguardando = pedidos.filter(p => p.status === 'PRONTO')
   const emRota = pedidos.filter(p => p.status === 'DESPACHADO')
 
@@ -113,6 +114,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           <span className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
             #{pedido.numero_pedido || pedido.id.split('-')[0]}
             {pedido.status === 'DESPACHADO' && <span className="text-xs bg-brand text-white px-2 py-1 rounded-full uppercase tracking-wider font-bold">Em Rota</span>}
+            {['NA_FILA', 'PREPARANDO'].includes(pedido.status) && <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded-full uppercase tracking-wider font-bold">Na Cozinha</span>}
           </span>
           <p className="font-semibold text-slate-600 dark:text-slate-400 mt-1">{pedido.cliente_nome}</p>
         </div>
@@ -122,7 +124,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           {!pedido.pago ? (
             <span className="inline-block mt-1 text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded">Cobrar na Entrega</span>
           ) : (
-            <span className="inline-block mt-1 text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded">J Pago</span>
+            <span className="inline-block mt-1 text-xs bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded">Já Pago</span>
           )}
         </div>
       </div>
@@ -172,7 +174,15 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
 
       {/* Acoes */}
       <div className="pt-2 mt-auto">
-        {pedido.status === 'PRONTO' ? (
+        {['NA_FILA', 'PREPARANDO'].includes(pedido.status) ? (
+          <Button 
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold h-12 text-lg"
+            disabled={loading === pedido.id}
+            onClick={() => handleMudarStatus(pedido.id, 'DESPACHADO')}
+          >
+            {loading === pedido.id ? <Loader2 className="animate-spin" /> : <><Bike className="mr-2" /> Forçar Saída (Na Cozinha)</>}
+          </Button>
+        ) : pedido.status === 'PRONTO' ? (
           <Button 
             className="w-full bg-brand hover:bg-orange-600 text-white font-bold h-12 text-lg"
             disabled={loading === pedido.id}
@@ -201,7 +211,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           <Bike size={48} className="text-slate-300 dark:text-slate-700" />
         </div>
         <h2 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">Nenhuma entrega pendente</h2>
-        <p className="text-slate-500 dark:text-slate-500 max-w-xs">Todos os pedidos prontos j foram entregues ou esto na cozinha sendo preparados.</p>
+        <p className="text-slate-500 dark:text-slate-500 max-w-xs">Nenhum pedido na fila, na cozinha ou pronto no momento.</p>
       </div>
     )
   }
@@ -211,7 +221,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
       {emRota.length > 0 && (
         <div>
           <h2 className="font-bold text-brand uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
-            <Bike size={18} /> Com voc no caminho ({emRota.length})
+            <Bike size={18} /> Com você no caminho ({emRota.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {emRota.map(p => <RenderCard key={p.id} pedido={p} />)}
@@ -221,11 +231,22 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
 
       {aguardando.length > 0 && (
         <div>
-          <h2 className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
-            <PackageOpen size={18} /> Aguardando Coleta ({aguardando.length})
+          <h2 className="font-bold text-emerald-500 uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
+            <PackageOpen size={18} /> Prontos para Coleta ({aguardando.length})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {aguardando.map(p => <RenderCard key={p.id} pedido={p} />)}
+          </div>
+        </div>
+      )}
+
+      {naCozinha.length > 0 && (
+        <div className="opacity-75">
+          <h2 className="font-bold text-amber-500 uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
+            <Loader2 size={18} className="animate-spin" /> Na Cozinha ({naCozinha.length})
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {naCozinha.map(p => <RenderCard key={p.id} pedido={p} />)}
           </div>
         </div>
       )}

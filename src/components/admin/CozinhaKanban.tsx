@@ -132,7 +132,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
             onClick={() => handleMudarStatus(pedido.id, 'PREPARANDO')}
             className="col-span-2 bg-blue-600 hover:bg-blue-700 font-bold"
           >
-            ComeÃ§ar Preparo
+            Começar Preparo
           </Button>
         )}
         {pedido.status === 'PREPARANDO' && (
