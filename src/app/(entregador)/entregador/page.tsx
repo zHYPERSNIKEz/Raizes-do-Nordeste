@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EntregadorPainelClient } from '@/components/entregador/EntregadorPainelClient'
 
@@ -38,7 +38,7 @@ export default async function EntregadorPage() {
   const { data: pedidos, error: pedidosError } = await supabase
     .from('pedidos')
     .select(`
-      id, numero_pedido, cliente_nome, telefone, endereco, total, forma_pagamento, pago, status, criado_em,
+      id, numero_pedido, cliente_nome, telefone, endereco, total, forma_pagamento, pago, status, criado_em, tipo_consumo,
       itens_pedido ( quantidade, produtos(nome) )
     `)
     .eq('loja_id', loja.id)
@@ -47,6 +47,7 @@ export default async function EntregadorPage() {
     .order('criado_em', { ascending: true })
 
   if (pedidosError) console.error("ERRO AO BUSCAR PEDIDOS NO ENTREGADOR:", pedidosError);
+  console.log("Pedidos fetched in Entregador page:", pedidos?.length, "orders found.");
   
   return (
     <main className="p-4 md:p-6 pb-24 min-h-screen">

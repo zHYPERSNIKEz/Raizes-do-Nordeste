@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -42,9 +42,12 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
             const pedidoAtualizado = payload.new as Pedido
             
-            // Se o pedido no for DELIVERY ou se for FINALIZADO/CANCELADO, remove da lista
-            if (pedidoAtualizado.tipo_consumo !== 'DELIVERY' || 
-                !['NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO'].includes(pedidoAtualizado.status)) {
+            // Como o Supabase envia apenas as colunas atualizadas em UPDATEs, tipo_consumo pode vir undefined.
+            // S removemos se ele vier explicitamente diferente de DELIVERY, ou se o status mudar para algo finalizado.
+            if (
+              (pedidoAtualizado.tipo_consumo && pedidoAtualizado.tipo_consumo !== 'DELIVERY') || 
+              (pedidoAtualizado.status && !['NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO'].includes(pedidoAtualizado.status))
+            ) {
               setPedidos(prev => prev.filter(p => p.id !== pedidoAtualizado.id))
               return
             }
@@ -53,7 +56,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
             setPedidos(prev => {
               const existe = prev.some(p => p.id === pedidoAtualizado.id)
               if (existe) {
-                return prev.map(p => p.id === pedidoAtualizado.id ? { ...p, status: pedidoAtualizado.status, pago: pedidoAtualizado.pago } : p)
+                return prev.map(p => p.id === pedidoAtualizado.id ? { ...p, ...pedidoAtualizado } : p)
               } else {
                 // Precisamos buscar os itens e endereo pois no vm no webhook
                 supabase.from('pedidos')
@@ -178,9 +181,9 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           <Button 
             className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold h-12 text-lg"
             disabled={loading === pedido.id}
-            onClick={() => handleMudarStatus(pedido.id, 'DESPACHADO')}
+            onClick={() => handleMudarStatus(pedido.id, 'PRONTO')}
           >
-            {loading === pedido.id ? <Loader2 className="animate-spin" /> : <><Bike className="mr-2" /> Forçar Saída (Na Cozinha)</>}
+            {loading === pedido.id ? <Loader2 className="animate-spin" /> : <><PackageOpen className="mr-2" /> Marcar como Pronto</>}
           </Button>
         ) : pedido.status === 'PRONTO' ? (
           <Button 

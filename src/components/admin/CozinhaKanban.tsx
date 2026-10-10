@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -108,7 +108,7 @@ export function CozinhaKanban({ initialPedidos, lojaId }: { initialPedidos: Pedi
         <div>
           <h4 className="font-bold text-orange-400">
             <span className="text-slate-300 mr-2">#{pedido.numero_pedido || pedido.id.split('-')[0]}</span>
-            {pedido.tipo_consumo === 'LOCAL' ? `Mesa ${pedido.mesa}` : 'Delivery / Retirada'}
+            {pedido.tipo_consumo === 'LOCAL' ? `Mesa ${pedido.mesa}` : pedido.tipo_consumo === 'DELIVERY' ? 'Delivery' : 'Retirada no Balcão'}
           </h4>
           <p className="text-sm font-semibold">{pedido.cliente_nome}</p>
         </div>
