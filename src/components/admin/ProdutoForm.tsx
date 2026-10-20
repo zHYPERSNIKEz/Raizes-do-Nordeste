@@ -21,7 +21,7 @@ export function ProdutoForm({
   categoriasExistentes?: string[]
 }) {
     // Merged standard categories + existing categories from DB
-  const standardCategorias = ['Artesanais', 'Smash', 'Bebidas', 'Porções', 'Sobremesas'];
+  const standardCategorias = ['Pratos Principais', 'Carnes de Sol & Assados', 'Porções & Petiscos', 'Bebidas', 'Sobremesas Regionais'];
   const allCategorias = Array.from(new Set([...standardCategorias, ...(categoriasExistentes || [])]));
 
   const [ingredientes, setIngredientes] = useState<string[]>(produto?.ingredientes_base || [])
@@ -163,7 +163,7 @@ export function ProdutoForm({
                 name="categoria" 
                 list="categorias-list"
                 defaultValue={produto?.categoria || ''}
-                placeholder="Ex: Artesanais, Smash..."
+                placeholder="Ex: Pratos Principais, Carnes de Sol, Bebidas..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand"
               />
               <datalist id="categorias-list">
@@ -332,7 +332,7 @@ export function ProdutoForm({
                 type="text" 
                 value={novoAddNome}
                 onChange={e => setNovoAddNome(e.target.value)}
-                placeholder="Ex: Bacon Extra"
+                placeholder="Ex: Queijo Coalho Extra"
                 className="flex-[2] bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white" 
               />
               <input 

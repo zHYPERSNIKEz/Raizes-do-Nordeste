@@ -1,6 +1,6 @@
-﻿# 🍔 Arte Burgueria - Sistema de Pedidos e Delivery
+# 🌵 Raízes do Nordeste - Sistema de Pedidos e Delivery
 
-Plataforma completa de delivery e gestão de pedidos criada para a **Arte Burgueria**, focada em alta conversão visual, acompanhamento em tempo real e facilidade operacional.
+Plataforma completa de delivery e gestão de pedidos para o restaurante **Raízes do Nordeste**, focada em gastronomia regional sofisticada, acompanhamento em tempo real e facilidade operacional.
 
 ## 🚀 Tecnologias Utilizadas
 - **Framework:** Next.js (App Router, Server Actions, Server Components)

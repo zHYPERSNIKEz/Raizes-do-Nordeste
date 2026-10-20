@@ -51,18 +51,18 @@ export default async function VitrinePage() {
             </div>
           ) : (
             <div className="bg-primary text-primary-foreground text-sm md:text-base font-bold px-4 py-1 rounded-full mb-6 uppercase tracking-wider shadow-md">
-              Sabor Incomparável
+              Culinária Regional Autêntica
             </div>
           )}
           
-          <h1 className="font-display text-6xl md:text-8xl tracking-wide leading-tight mb-4 text-primary">
-            Arte<br />
-            <span className="text-background">Burgueria</span>
+          <h1 className="font-display text-5xl md:text-7xl tracking-tight leading-tight mb-4 text-primary">
+            Raízes<br />
+            <span className="text-background">do Nordeste</span>
           </h1>
           <p className="text-lg md:text-xl max-w-lg opacity-90 mt-4">
             {!lojaAberta 
-              ? 'Volte em breve para saborear o melhor hambúrguer artesanal.'
-              : user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'O hambúrguer artesanal de verdade. Faça login para pedir.'}
+              ? 'Volte em breve para saborear o melhor da gastronomia nordestina.'
+              : user ? 'Bem-vindo de volta! Faça seu pedido abaixo.' : 'A verdadeira essência da culinária nordestina. Faça login para pedir.'}
           </p>
         </div>
       </header>

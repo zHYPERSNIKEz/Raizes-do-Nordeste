@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { login, signup } from './actions'
@@ -29,7 +29,7 @@ export default function LoginPage() {
           </h1>
           <p className="text-muted-foreground mt-2">
             {isLogin 
-              ? 'Faça login para pedir seus hambúrgueres favoritos.' 
+              ? 'Faça login para pedir seus pratos nordestinos favoritos.' 
               : 'Cadastre-se rapidamente para fazer seu pedido.'}
           </p>
         </div>

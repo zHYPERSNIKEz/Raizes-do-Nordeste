@@ -1,11 +1,11 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CozinhaKanban } from '@/components/admin/CozinhaKanban'
 
 export default async function CozinhaPage() {
   const supabase = await createClient()
 
-  // 1. Validar autenticaÃ§Ã£o
+  // 1. Validar autenticação
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/login?returnUrl=/admin/cozinha')
@@ -19,17 +19,17 @@ export default async function CozinhaPage() {
     .single()
 
   if (perfil?.cargo === 'CLIENTE') {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Apenas funcionÃ¡rios.</div>
+    return <div className="p-8 text-center text-red-500">Acesso negado. Apenas funcionários.</div>
   }
 
-  // 3. Pegar a Ãºnica loja do sistema
+  // 3. Pegar a única loja do sistema
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
   
   if (!loja) {
-    return <div className="p-8 text-center text-red-500">Erro crÃ­tico: Nenhuma loja cadastrada no banco.</div>
+    return <div className="p-8 text-center text-red-500">Erro crítico: Nenhuma loja cadastrada no banco.</div>
   }
 
-  // 4. Buscar os pedidos iniciais que NÃƒO estÃ£o finalizados nem cancelados
+  // 4. Buscar os pedidos iniciais que NÃO estão finalizados nem cancelados
   const { data: pedidos } = await supabase
     .from('pedidos')
     .select(`
@@ -37,19 +37,19 @@ export default async function CozinhaPage() {
       itens_pedido ( quantidade, observacao, produtos(nome) )
     `)
     .eq('loja_id', loja.id)
-    .in('status', ['NA_FILA', 'PREPARANDO', 'PRONTO']) // NÃ£o traz finalizados
+    .in('status', ['NA_FILA', 'PREPARANDO', 'PRONTO']) // Não traz finalizados
     .order('criado_em', { ascending: true })
 
-  // 5. Renderizar o Client Component passando o estado inicial para hidratar rÃ¡pido a tela
+  // 5. Renderizar o Client Component passando o estado inicial para hidratar rápido a tela
   return (
     <main className="min-h-screen bg-slate-950 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
-            ðŸ³ Kanban da Cozinha
+            🍳 Kanban da Cozinha
           </h1>
           <p className="text-slate-500 mt-2">
-            Os pedidos novos aparecerÃ£o na coluna "Na Fila" automaticamente. Mantenha o Ã¡udio ligado.
+            Os pedidos novos aparecerão na coluna &quot;Na Fila&quot; automaticamente. Mantenha o áudio ligado.
           </p>
         </header>
 
@@ -58,4 +58,3 @@ export default async function CozinhaPage() {
     </main>
   )
 }
-

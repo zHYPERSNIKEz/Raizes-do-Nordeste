@@ -8,7 +8,7 @@ export type AdicionalSelecionado = {
 }
 
 export type CartItem = {
-  cartItemId: string // Identificador único na sacola (para diferenciar o mesmo lanche com personalizações diferentes)
+  cartItemId: string // Identificador único na sacola (para diferenciar o mesmo prato com personalizações diferentes)
   produtoId: string
   nome: string
   precoBase: number
@@ -116,7 +116,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'arteburgueria-cart-v2', // mudando o nome para resetar o cache antigo e não quebrar a tipagem
+      name: 'raizes-do-nordeste-cart-v1', // chave de persistência do carrinho Raízes do Nordeste
     }
   )
 )

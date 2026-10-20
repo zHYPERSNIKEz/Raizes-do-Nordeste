@@ -70,7 +70,7 @@ export function CatalogoVitrineClient({ produtos }: { produtos: any[] }) {
               <div className="p-6 flex flex-col flex-grow relative z-20">
                 <h3 className="font-display text-2xl text-foreground mb-2">{produto.nome}</h3>
                 <p className="text-muted-foreground mb-6 flex-grow text-base leading-relaxed line-clamp-3">
-                  {produto.descricao || 'O clássico sem descrição.'}
+                  {produto.descricao || 'Prato típico preparado com ingredientes selecionados.'}
                 </p>
                 
                 <div className="flex justify-between items-center mt-auto pt-4 border-t border-border/50">

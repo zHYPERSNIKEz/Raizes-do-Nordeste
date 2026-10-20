@@ -63,7 +63,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
     <main className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-slate-100">Dashboard de Vendas</h1>
-        <p className="text-slate-400 mt-1">Acompanhe o desempenho da sua hamburgueria.</p>
+        <p className="text-slate-400 mt-1">Acompanhe o desempenho do restaurante Raízes do Nordeste.</p>
       </header>
 
       <DashboardClient pedidos={pedidosMapeados || []} periodoAtual={periodo} inicioAtual={searchParams.inicio} fimAtual={searchParams.fim} />

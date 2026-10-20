@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { PackageCheck, Clock, MapPin, Receipt, ArrowRight, ChevronLeft } from 'lucide-react'
@@ -53,7 +53,7 @@ export default async function MeusPedidosPage() {
             <PackageCheck size={32} />
           </div>
           <h2 className="font-display text-2xl mb-2 text-foreground">Nenhum pedido ainda</h2>
-          <p className="text-muted-foreground mb-6">Que tal experimentar os melhores hambúrgueres da cidade hoje?</p>
+          <p className="text-muted-foreground mb-6">Que tal experimentar o melhor da culinária nordestina hoje?</p>
           <Link href="/" className="inline-block px-8 py-3 bg-primary text-primary-foreground font-bold uppercase rounded-full hover:scale-105 transition-transform shadow-md">
             Fazer meu primeiro pedido
           </Link>

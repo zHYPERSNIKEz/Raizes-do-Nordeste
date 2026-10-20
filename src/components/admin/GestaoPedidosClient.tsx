@@ -32,7 +32,7 @@ function ConsumoBadge({ tipo, mesa }: { tipo: string, mesa?: number }) {
   if (tipo === 'DELIVERY') {
     return <span className="bg-rose-500/20 text-rose-400 px-2 py-1 rounded text-xs font-bold">DELIVERY</span>
   }
-  return <span className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs font-bold">BALCÃƒO</span>
+  return <span className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs font-bold">BALCÃO</span>
 }
 
 export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosIniciais: any[], lojaId: string }) {
@@ -290,7 +290,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
             <div>
               <h2 className="text-xl font-bold text-slate-100">Pedido #{(pedidoSelecionado.numero_pedido || pedidoSelecionado.id.split('-')[0])}</h2>
               <p className="text-sm text-slate-400">
-                {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(pedidoSelecionado.criado_em)).replace(',', ' Ã s')}
+                {new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(pedidoSelecionado.criado_em)).replace(',', ' às')}
               </p>
             </div>
             <button onClick={() => setPedidoSelecionado(null)} className="text-slate-500 hover:text-white">
@@ -355,7 +355,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                     <div className="flex gap-2">
                       <span className="font-bold text-slate-400">{item.quantidade}x</span>
                       <div>
-                        <p className="text-slate-200">{item.produtos?.nome || 'Produto IndisponÃ­vel'}</p>
+                        <p className="text-slate-200">{item.produtos?.nome || 'Produto Indisponível'}</p>
                         {item.observacao && (
                           <p className="text-xs text-brand/80 mt-0.5">{item.observacao}</p>
                         )}
@@ -374,7 +374,7 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
 
           {/* Ações Inferiores */}
           <div className="mt-6 pt-4 border-t border-slate-800 space-y-2">
-            <h4 className="text-xs text-slate-500 mb-2 font-semibold">AvanÃ§ar Status:</h4>
+            <h4 className="text-xs text-slate-500 mb-2 font-semibold">Avançar Status:</h4>
             
             {pedidoSelecionado.status === 'NA_FILA' && (
               <button 

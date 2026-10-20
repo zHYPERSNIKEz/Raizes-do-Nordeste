@@ -230,7 +230,7 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
 
       {produto.ingredientes_base.length > 0 && (
         <section>
-          <h3 className="font-bold text-lg text-foreground mb-3">O que vem no lanche?</h3>
+          <h3 className="font-bold text-lg text-foreground mb-3">O que acompanha o prato?</h3>
           <p className="text-sm text-muted-foreground mb-4">Se não quiser algum item, basta desmarcar.</p>
           <div className="flex flex-wrap gap-2">
             {produto.ingredientes_base.map(ing => {
@@ -256,8 +256,8 @@ export function CustomizadorLanche({ produto }: { produto: ProdutoData }) {
 
       {produto.adicionais.length > 0 && (
         <section>
-          <h3 className="font-bold text-lg text-foreground mb-3">Turbine seu pedido</h3>
-          <p className="text-sm text-muted-foreground mb-4">Deseja colocar um extra?</p>
+          <h3 className="font-bold text-lg text-foreground mb-3">Acompanhamentos e adicionais</h3>
+          <p className="text-sm text-muted-foreground mb-4">Deseja acrescentar uma porção extra ao seu prato?</p>
           
           <div className="space-y-3">
             {produto.adicionais.map(add => {

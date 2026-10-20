@@ -9,7 +9,7 @@ export async function analisarCardapioImagem(images: { data: string, mimeType: s
     const prompt = `Você é um assistente especializado em extrair dados de cardápios de restaurantes.
 Analise as imagens em anexo e extraia todos os produtos e grupos de complementos/adicionais listados.
 Regras:
-1. Agrupe os produtos principais por categorias óbvias (ex: Hambúrguer Bovino, Bebidas, Combos/Trios, Sobremesas).
+1. Agrupe os produtos principais por categorias óbvias (ex: Pratos Principais, Carnes de Sol & Assados, Porções & Petiscos, Bebidas, Sobremesas Regionais).
 2. TUDO que for seção de "Adicionais", "Acrescente ao seu pedido" ou "Acompanhamentos" NÃO DEVE ser cadastrado como produto normal, mas sim na lista de 'grupos_complementos' (onde max_escolhas deve ser um número alto, ex: 10, e min_escolhas 0, a menos que especificado).
 3. Leia atentamente os nomes, descrições (ingredientes) e preços de cada item.`;
 
@@ -43,7 +43,7 @@ Regras:
           items: {
             type: Type.OBJECT,
             properties: {
-              nome: { type: Type.STRING, description: "Nome do grupo, ex: Escolha seu Pão" },
+              nome: { type: Type.STRING, description: "Nome do grupo, ex: Escolha o Acompanhamento" },
               obrigatorio: { type: Type.BOOLEAN },
               max_escolhas: { type: Type.INTEGER },
               min_escolhas: { type: Type.INTEGER },

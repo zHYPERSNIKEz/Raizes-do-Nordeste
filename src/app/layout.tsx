@@ -1,11 +1,12 @@
-﻿import type { Metadata } from "next";
-import { Oswald, Manrope } from "next/font/google";
+import type { Metadata } from "next";
+import { Playfair_Display, Manrope } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const fontDisplay = Oswald({
+const fontDisplay = Playfair_Display({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
 const fontSans = Manrope({
@@ -14,8 +15,8 @@ const fontSans = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Arte Hamburgueria",
-  description: "Faça seu pedido online",
+  title: "Raízes do Nordeste | Gastronomia Regional",
+  description: "Culinária nordestina autêntica e sofisticada. Faça seu pedido online.",
 };
 
 import { Toaster } from 'sonner'

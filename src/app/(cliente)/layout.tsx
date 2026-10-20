@@ -1,4 +1,4 @@
-﻿import { HeaderCliente } from '@/components/cliente/HeaderCliente'
+import { HeaderCliente } from '@/components/cliente/HeaderCliente'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function ClienteLayout({
@@ -31,7 +31,7 @@ export default async function ClienteLayout({
       </div>
       
       <footer className="bg-card border-t border-border mt-auto py-8 text-center text-muted-foreground text-sm">
-        <p>© {new Date().getFullYear()} Arte Burgueria. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} Raízes do Nordeste. Todos os direitos reservados.</p>
       </footer>
     </div>
   )

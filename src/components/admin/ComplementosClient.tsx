@@ -93,7 +93,7 @@ export function ComplementosClient({ grupos }: { grupos: any[] }) {
             {editingGroup && <input type="hidden" name="id" value={editingGroup.id} />}
             
             <div>
-              <label className="block text-sm text-slate-400 mb-1">Nome do Grupo (Ex: Escolha seu Pão, Adicionais)</label>
+              <label className="block text-sm text-slate-400 mb-1">Nome do Grupo (Ex: Escolha o Acompanhamento, Ponto da Carne)</label>
               <input type="text" name="nome" defaultValue={editingGroup?.nome} required className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-white" />
             </div>
             
@@ -177,7 +177,7 @@ export function ComplementosClient({ grupos }: { grupos: any[] }) {
                 <form onSubmit={(e) => handleSaveItem(e)} className="flex gap-2 items-start bg-slate-950 p-3 rounded-lg border border-slate-700">
                   <input type="hidden" name="grupo_id" value={grupo.id} />
                   <div className="flex-1">
-                    <input type="text" name="nome" placeholder="Ex: Pão Australiano" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />
+                    <input type="text" name="nome" placeholder="Ex: Baião de Dois, Macaxeira Frita" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />
                   </div>
                   <div className="w-32">
                     <input type="number" step="0.01" name="preco" placeholder="R$ 0,00" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />

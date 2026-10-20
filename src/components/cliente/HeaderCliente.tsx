@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LogOut, User as UserIcon, ShieldAlert } from 'lucide-react'
@@ -36,8 +36,8 @@ export function HeaderCliente({ user, cargo = 'CLIENTE' }: HeaderClienteProps) {
     <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         
-        <Link href="/" className="font-black text-2xl tracking-tighter text-brand hover:scale-105 transition-transform">
-          ARTE<span className="text-white font-medium">.</span>
+        <Link href="/" className="font-display font-bold text-xl md:text-2xl tracking-tight text-white hover:scale-[1.02] transition-transform flex items-center gap-1.5">
+          Raízes <span className="text-brand italic font-semibold">do Nordeste</span>
         </Link>
 
         <div className="flex items-center gap-3 md:gap-4">

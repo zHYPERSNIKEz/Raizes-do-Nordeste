@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { buscarDadosUsuarioAuth, atualizarFuncionario } from '@/app/(admin)/admin/equipe/actions'
@@ -42,7 +42,7 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
     setLoading(true)
     
     if (senha && senha.length > 0 && senha.length < 6) {
-      toast.error('A nova senha deve ter no mnimo 6 caracteres.')
+      toast.error('A nova senha deve ter no mínimo 6 caracteres.')
       setLoading(false)
       return
     }
@@ -76,7 +76,7 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
             <div className="flex justify-between items-center p-6 border-b border-slate-800">
               <div>
                 <h2 className="text-xl font-bold text-slate-100">Editar Perfil</h2>
-                <p className="text-sm text-slate-400 mt-1">Altere os dados do funcionrio</p>
+                <p className="text-sm text-slate-400 mt-1">Altere os dados do funcionário</p>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
@@ -136,11 +136,11 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
                         type="password" 
                         value={senha}
                         onChange={e => setSenha(e.target.value)}
-                        placeholder="Deixe em branco para no alterar"
+                        placeholder="Deixe em branco para não alterar"
                         className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 focus:border-brand outline-none"
                       />
                       <p className="text-xs text-slate-500 mt-1">
-                        Se o funcionrio esqueceu a senha, digite uma nova aqui para ele.
+                        Se o funcionário esqueceu a senha, digite uma nova aqui para ele.
                       </p>
                     </div>
                   </div>
@@ -164,7 +164,7 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
                 disabled={loading || carregandoEmail}
                 className="bg-brand hover:bg-orange-600 text-white min-w-[120px]"
               >
-                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Salvar Alteraes'}
+                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Salvar Alterações'}
               </Button>
             </div>
             

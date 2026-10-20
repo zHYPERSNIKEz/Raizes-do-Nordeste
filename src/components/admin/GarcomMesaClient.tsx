@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -105,7 +105,7 @@ export function GarcomMesaClient({ produtos, mesa, lojaId, userId }: any) {
             </div>
             <input
               type="text"
-              placeholder="Buscar lanche..."
+              placeholder="Buscar prato ou bebida..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-foreground"

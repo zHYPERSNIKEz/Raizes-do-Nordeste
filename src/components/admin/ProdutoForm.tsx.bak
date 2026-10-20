@@ -77,14 +77,14 @@ export function ProdutoForm({ produto }: { produto?: any }) {
               <label className="block text-sm font-medium text-slate-400 mb-1">Categoria</label>
               <select 
                 name="categoria" 
-                defaultValue={produto?.categoria || 'Artesanais'}
+                defaultValue={produto?.categoria || 'Pratos Principais'}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-brand focus:ring-1 focus:ring-brand"
               >
-                <option value="Artesanais">Artesanais</option>
-                <option value="Smash">Smash</option>
+                <option value="Pratos Principais">Pratos Principais</option>
+                <option value="Carnes de Sol & Assados">Carnes de Sol & Assados</option>
                 <option value="Bebidas">Bebidas</option>
-                <option value="Porções">Porções</option>
-                <option value="Sobremesas">Sobremesas</option>
+                <option value="Porções & Petiscos">Porções & Petiscos</option>
+                <option value="Sobremesas Regionais">Sobremesas Regionais</option>
               </select>
             </div>
           </div>
@@ -162,7 +162,7 @@ export function ProdutoForm({ produto }: { produto?: any }) {
                 type="text" 
                 value={novoAddNome}
                 onChange={e => setNovoAddNome(e.target.value)}
-                placeholder="Ex: Bacon Extra"
+                placeholder="Ex: Queijo Coalho Extra"
                 className="flex-[2] bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white" 
               />
               <input 

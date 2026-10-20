@@ -9,9 +9,9 @@ async function criarPedidos() {
   const loja_id = '11111111-1111-1111-1111-111111111111';
   
   // Dados dos produtos
-  const produto1 = { id: 'af3e65e0-7adc-4dda-b4b4-80219d61d926', nome: '01 ARTE DUPLO', preco: 15.5 };
-  const produto2 = { id: '73fa4250-2d13-4e8e-ba00-b1c82d78a8a1', nome: '02 ARTE SUPER', preco: 12.5 };
-  const produto3 = { id: '17a48393-97a6-4a75-9f9d-af113359a9c9', nome: '03 ARTE BACON', preco: 10.5 };
+  const produto1 = { id: 'af3e65e0-7adc-4dda-b4b4-80219d61d926', nome: '01 BAIÃO DE DOIS COMPLETO', preco: 45.0 };
+  const produto2 = { id: '73fa4250-2d13-4e8e-ba00-b1c82d78a8a1', nome: '02 CARNE DE SOL NA NATA', preco: 58.0 };
+  const produto3 = { id: '17a48393-97a6-4a75-9f9d-af113359a9c9', nome: '03 DADINHOS DE TAPIOCA', preco: 26.0 };
   
   // Cliente 1
   const cliente1 = {

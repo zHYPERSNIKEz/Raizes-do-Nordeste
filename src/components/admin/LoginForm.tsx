@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -26,7 +26,7 @@ export function LoginForm() {
     })
 
     if (error || !data.user) {
-      toast.error('Credenciais invlidas.')
+      toast.error('Credenciais inválidas.')
       setLoading(false)
     } else {
       const { data: perfil } = await supabase.from('perfis').select('cargo').eq('id', data.user.id).single()
