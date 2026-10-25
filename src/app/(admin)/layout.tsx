@@ -1,28 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AdminSidebarClient } from '@/components/admin/AdminSidebarClient'
+import { getAdminSession } from '@/lib/admin'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
+  const session = await getAdminSession()
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
+  if (!session) {
     redirect('/admin/login')
   }
 
-  // Verifica o cargo e permissões para garantir segurança
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('cargo, permissoes')
-    .eq('id', user.id)
-    .single()
-
-  const userCargo = perfil?.cargo?.trim().toUpperCase()
-  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
-
-  if (userCargo === 'CLIENTE') {
+  if (session.cargo === 'CLIENTE') {
     return (
       <div className="dark min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100">
         <p className="text-red-500 font-bold mb-4">Acesso Negado</p>
@@ -31,20 +19,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     )
   }
 
-  const isMaster = userCargo === 'ADMIN' || userCargo === 'GERENTE'
-  const podeCaixa = isMaster || permissoes.includes('acesso_caixa')
-  const podeProdutos = isMaster || permissoes.includes('acesso_produtos')
-  const podeRelatorios = isMaster || permissoes.includes('acesso_relatorios')
-
   return (
     <div className="dark min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row">
       {/* Sidebar */}
-<AdminSidebarClient 
-        isMaster={isMaster} 
-        podeCaixa={podeCaixa} 
-        podeProdutos={podeProdutos} 
-        podeRelatorios={podeRelatorios} 
-        userCargo={userCargo || ''} 
+      <AdminSidebarClient 
+        isMaster={session.isMaster} 
+        podeCaixa={session.podeCaixa} 
+        podeProdutos={session.podeProdutos} 
+        podeRelatorios={session.podeRelatorios} 
+        userCargo={session.cargo} 
       />
 
       {/* Main Content */}

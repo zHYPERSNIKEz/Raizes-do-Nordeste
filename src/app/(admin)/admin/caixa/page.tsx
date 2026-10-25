@@ -1,25 +1,30 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CaixaManager } from '@/components/admin/CaixaManager'
 import { AlertCircle } from 'lucide-react'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
+
+export const revalidate = 0
 
 export default async function CaixaPage() {
-  const supabase = await createClient()
+  const [session, loja] = await Promise.all([
+    getAdminSession(),
+    getLojaUnica(),
+  ])
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?returnUrl=/admin/caixa')
+  if (!session) redirect('/admin/login?returnUrl=/admin/caixa')
 
-  const { data: perfil } = await supabase.from('perfis').select('cargo, permissoes').eq('id', user.id).single()
-  const cargo = perfil?.cargo?.trim().toUpperCase()
-  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
-
-  // Permite acesso se for ADMIN, GERENTE ou tiver a permissão extra "acesso_caixa"
-  if (cargo !== 'ADMIN' && cargo !== 'GERENTE' && !permissoes.includes('acesso_caixa')) {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Você não tem permissão para acessar o Caixa.</div>
+  if (!session.podeCaixa) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Acesso negado. Você não tem permissão para acessar o Caixa.
+      </div>
+    )
   }
 
-  const { data: loja } = await supabase.from('lojas').select('id, nome').limit(1).single()
   if (!loja) return <div className="p-8">Loja não encontrada.</div>
+
+  const supabase = await createClient()
 
   // Busca o caixa aberto
   const { data: caixaAberto, error: caixaError } = await supabase
@@ -70,27 +75,27 @@ CREATE TABLE movimentacoes_caixa (
     )
   }
 
-  // Se tem caixa aberto, busca os pedidos pagos desde a abertura
+  // Se tem caixa aberto, busca os pedidos pagos e movimentações em paralelo
   let pedidos: any[] = []
   let movimentacoes: any[] = []
 
   if (caixaAberto) {
-    const { data: p } = await supabase
-      .from('pedidos')
-      .select('id, total, forma_pagamento, criado_em, tipo_consumo')
-      .eq('loja_id', loja.id)
-      .eq('pago', true)
-      .gte('criado_em', caixaAberto.criado_em)
-    
-    pedidos = p || []
+    const [pRes, mRes] = await Promise.all([
+      supabase
+        .from('pedidos')
+        .select('id, total, forma_pagamento, criado_em, tipo_consumo')
+        .eq('loja_id', loja.id)
+        .eq('pago', true)
+        .gte('criado_em', caixaAberto.criado_em),
+      supabase
+        .from('movimentacoes_caixa')
+        .select('*')
+        .eq('caixa_id', caixaAberto.id)
+        .order('criado_em', { ascending: false }),
+    ])
 
-    const { data: m } = await supabase
-      .from('movimentacoes_caixa')
-      .select('*')
-      .eq('caixa_id', caixaAberto.id)
-      .order('criado_em', { ascending: false })
-    
-    movimentacoes = m || []
+    pedidos = pRes.data || []
+    movimentacoes = mRes.data || []
   }
 
   return (

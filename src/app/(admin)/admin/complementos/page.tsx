@@ -2,25 +2,25 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { ComplementosClient } from '@/components/admin/ComplementosClient'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ComplementosPage() {
-  const supabase = await createClient()
+  const [session, loja] = await Promise.all([
+    getAdminSession(),
+    getLojaUnica(),
+  ])
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/admin/login')
+  if (!session) redirect('/admin/login')
 
-  const { data: perfil } = await supabase.from('perfis').select('cargo').eq('id', user.id).single()
-  const cargo = perfil?.cargo?.trim().toUpperCase()
-
-  if (cargo !== 'ADMIN' && cargo !== 'GERENTE') {
+  if (!session.isMaster) {
     return <div className="p-8 text-center text-red-500">Acesso negado.</div>
   }
 
-  const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
+  const supabase = await createClient()
 
   // Buscar grupos e seus itens
   const { data: grupos } = await supabase
@@ -30,9 +30,9 @@ export default async function ComplementosPage() {
     .order('criado_em', { ascending: true })
 
   // Ordenar itens por 'criado_em'
-  const gruposFormatados = grupos?.map(g => ({
+  const gruposFormatados = grupos?.map((g: any) => ({
     ...g,
-    complemento_itens: g.complemento_itens.sort((a: any, b: any) => 
+    complemento_itens: (g.complemento_itens || []).sort((a: any, b: any) => 
       new Date(a.criado_em).getTime() - new Date(b.criado_em).getTime()
     )
   })) || []
@@ -61,4 +61,3 @@ export default async function ComplementosPage() {
     </main>
   )
 }
-

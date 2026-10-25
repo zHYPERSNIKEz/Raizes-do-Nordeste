@@ -2,29 +2,31 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { DashboardClient } from '@/components/admin/DashboardClient'
 import { subDays, startOfDay, endOfDay, parseISO } from 'date-fns'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
 
 export const revalidate = 0 
 
 export default async function DashboardPage(props: { searchParams: Promise<{ inicio?: string; fim?: string; periodo?: string }> }) {
-  const searchParams = await props.searchParams
-  const supabase = await createClient()
+  const [searchParams, session, loja] = await Promise.all([
+    props.searchParams,
+    getAdminSession(),
+    getLojaUnica(),
+  ])
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/admin/login')
+  if (!session) redirect('/admin/login')
 
-  const { data: perfil } = await supabase.from('perfis').select('cargo, permissoes').eq('id', user.id).single()
-  const cargo = perfil?.cargo?.trim().toUpperCase()
-  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
-
-  if (cargo !== 'ADMIN' && cargo !== 'GERENTE' && !permissoes.includes('acesso_relatorios')) {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Você não tem permissão para visualizar o relatório.</div>
+  if (!session.podeRelatorios) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Acesso negado. Você não tem permissão para visualizar o relatório.
+      </div>
+    )
   }
 
-  const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
+  const supabase = await createClient()
 
   let query = supabase
     .from('pedidos')
-    
     .select('id, total, criado_em, itens_pedido(quantidade, produtos(nome))')
     .eq('loja_id', loja?.id)
     .eq('pago', true)
@@ -46,7 +48,6 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
     query = query.gte('criado_em', trintaDiasAtras)
   }
 
-  
   const { data: rawPedidos } = await query.order('criado_em', { ascending: true })
 
   const pedidosMapeados = (rawPedidos || []).map((p: any) => ({
@@ -70,4 +71,3 @@ export default async function DashboardPage(props: { searchParams: Promise<{ ini
     </main>
   )
 }
-

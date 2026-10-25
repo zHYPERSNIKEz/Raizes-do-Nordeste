@@ -1,34 +1,39 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { GestaoPedidosClient } from '@/components/admin/GestaoPedidosClient'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
+
+export const revalidate = 0
 
 export default async function PedidosPage() {
+  const [session, loja] = await Promise.all([
+    getAdminSession(),
+    getLojaUnica(),
+  ])
+
+  if (!session) {
+    redirect('/admin/login?returnUrl=/admin/pedidos')
+  }
+
+  if (session.cargo === 'CLIENTE' || session.cargo === 'COZINHA') {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Acesso negado. Apenas administradores e caixa.
+      </div>
+    )
+  }
+
+  if (!loja) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Erro crítico: Nenhuma loja cadastrada no banco.
+      </div>
+    )
+  }
+
   const supabase = await createClient()
 
-  // 1. Validar autenticaÃ§Ã£o e perfil
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login?returnUrl=/admin/pedidos')
-  }
-
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('cargo')
-    .eq('id', user.id)
-    .single()
-
-  if (perfil?.cargo === 'CLIENTE' || perfil?.cargo === 'COZINHA') {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Apenas administradores e caixa.</div>
-  }
-
-  // 2. Pegar a Ãºnica loja do sistema
-  const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
-  
-  if (!loja) {
-    return <div className="p-8 text-center text-red-500">Erro crÃ­tico: Nenhuma loja cadastrada no banco.</div>
-  }
-
-  // 3. Buscar os pedidos do dia / recentes (vamos trazer os mais recentes e os ativos)
+  // Buscar os pedidos do dia / recentes (traz os mais recentes e os ativos)
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
 
@@ -39,7 +44,6 @@ export default async function PedidosPage() {
       itens_pedido ( quantidade, preco_unitario, observacao, produtos(nome) )
     `)
     .eq('loja_id', loja.id)
-    // Traz pedidos que não estÃ£o finalizados/cancelados OU que foram criados hoje
     .or(`status.in.(NA_FILA,PREPARANDO,PRONTO,DESPACHADO),criado_em.gte.${hoje.toISOString()}`)
     .order('criado_em', { ascending: false })
 
@@ -60,4 +64,3 @@ export default async function PedidosPage() {
     </main>
   )
 }
-

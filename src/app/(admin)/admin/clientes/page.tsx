@@ -1,29 +1,23 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Users } from 'lucide-react'
+import { getAdminSession } from '@/lib/admin'
+
+export const revalidate = 0
 
 export default async function ClientesPage() {
-  const supabase = await createClient()
+  const session = await getAdminSession()
+  if (!session) redirect('/admin/login')
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/admin/login')
-
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('cargo')
-    .eq('id', user.id)
-    .single()
-
-  const userCargo = perfil?.cargo?.trim().toUpperCase()
-  const isMaster = userCargo === 'ADMIN' || userCargo === 'GERENTE'
-
-  if (!isMaster) {
+  if (!session.isMaster) {
     return (
       <div className="p-8 text-center text-red-500 bg-slate-950 min-h-screen">
         Acesso negado. Você não tem permissão para visualizar a lista de clientes.
       </div>
     )
   }
+
+  const supabase = await createClient()
 
   // Traz a lista de clientes
   const { data: clientes } = await supabase
@@ -48,34 +42,30 @@ export default async function ClientesPage() {
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950 text-slate-400 text-xs uppercase">
+            <thead className="bg-slate-950/60 text-xs uppercase text-slate-400 border-b border-slate-800">
               <tr>
-                <th className="px-6 py-4">Nome do Cliente</th>
+                <th className="px-6 py-4">Nome</th>
                 <th className="px-6 py-4">Telefone</th>
-                <th className="px-6 py-4 text-right">Data de Cadastro</th>
+                <th className="px-6 py-4">Cadastrado em</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {clientes?.map(c => (
-                <tr key={c.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-semibold text-slate-200">{c.nome || 'Cliente Anônimo'}</div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-400">
-                    {c.telefone || 'Não informado'}
-                  </td>
-                  <td className="px-6 py-4 text-right text-slate-500">
-                    {new Intl.DateTimeFormat('pt-BR').format(new Date(c.criado_em))}
-                  </td>
-                </tr>
-              ))}
-              
-              {(!clientes || clientes.length === 0) && (
+            <tbody className="divide-y divide-slate-800">
+              {(!clientes || clientes.length === 0) ? (
                 <tr>
                   <td colSpan={3} className="px-6 py-8 text-center text-slate-500">
                     Nenhum cliente cadastrado ainda.
                   </td>
                 </tr>
+              ) : (
+                clientes.map((c: any) => (
+                  <tr key={c.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-100">{c.nome}</td>
+                    <td className="px-6 py-4">{c.telefone || 'Não informado'}</td>
+                    <td className="px-6 py-4 text-slate-400">
+                      {new Date(c.criado_em).toLocaleDateString('pt-BR')}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

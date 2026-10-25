@@ -1,17 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ConfiguracoesForm } from '@/components/admin/ConfiguracoesForm'
+import { getAdminSession } from '@/lib/admin'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ConfiguracoesPage() {
+  const session = await getAdminSession()
+  if (!session) redirect('/admin/login?returnUrl=/admin/configuracoes')
+
+  if (session.cargo !== 'ADMIN') {
+    return <div className="p-8 text-center text-red-500">Acesso negado.</div>
+  }
+
   const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?returnUrl=/admin/configuracoes')
-
-  const { data: perfil } = await supabase.from('perfis').select('cargo').eq('id', user.id).single()
-  if (perfil?.cargo !== 'ADMIN') return <div className="p-8 text-center text-red-500">Acesso negado.</div>
 
   // Pega a loja ativa
   const { data: loja } = await supabase.from('lojas').select('*').limit(1).single()

@@ -5,35 +5,42 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { ProdutosTableClient } from '@/components/admin/ProdutosTableClient'
 import { ImportarCardapioModal } from '@/components/admin/ImportarCardapioModal'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
+
+export const revalidate = 0
 
 export default async function ProdutosPage() {
-  const supabase = await createClient()
+  const [session, loja] = await Promise.all([
+    getAdminSession(),
+    getLojaUnica(),
+  ])
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/admin/login')
+  if (!session) redirect('/admin/login')
 
-  const { data: perfil } = await supabase.from('perfis').select('cargo, permissoes').eq('id', user.id).single()
-  const cargo = perfil?.cargo?.trim().toUpperCase()
-  const permissoes = Array.isArray(perfil?.permissoes) ? perfil.permissoes : []
-
-  if (cargo !== 'ADMIN' && cargo !== 'GERENTE' && !permissoes.includes('acesso_produtos')) {
-    return <div className="p-8 text-center text-red-500">Acesso negado. Você não tem permissão para gerenciar o cardápio.</div>
+  if (!session.podeProdutos) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Acesso negado. Você não tem permissão para gerenciar o cardápio.
+      </div>
+    )
   }
 
-  const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
+  const supabase = await createClient()
 
-  const { data: produtos } = await supabase
-    .from('produtos')
-    .select('*')
-    .eq('loja_id', loja?.id)
-    .order('categoria', { ascending: true })
-    .order('nome', { ascending: true })
-
-  const { data: todosGrupos } = await supabase
-    .from('complemento_grupos')
-    .select('*')
-    .eq('loja_id', loja?.id)
-    .order('criado_em', { ascending: true })
+  // Executa as duas consultas de produtos e grupos em paralelo para dobrar a velocidade
+  const [produtosRes, gruposRes] = await Promise.all([
+    supabase
+      .from('produtos')
+      .select('*')
+      .eq('loja_id', loja?.id)
+      .order('categoria', { ascending: true })
+      .order('nome', { ascending: true }),
+    supabase
+      .from('complemento_grupos')
+      .select('*')
+      .eq('loja_id', loja?.id)
+      .order('criado_em', { ascending: true }),
+  ])
 
   return (
     <main className="p-6 md:p-10 max-w-6xl mx-auto">
@@ -57,7 +64,7 @@ export default async function ProdutosPage() {
         </div>
       </div>
 
-      <ProdutosTableClient produtos={produtos || []} todosGrupos={todosGrupos || []} />
+      <ProdutosTableClient produtos={produtosRes.data || []} todosGrupos={gruposRes.data || []} />
     </main>
   )
 }

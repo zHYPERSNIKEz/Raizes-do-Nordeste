@@ -1,39 +1,27 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { CozinhaKanban } from '@/components/admin/CozinhaKanban'
+import { getAdminSession, getLojaUnica } from '@/lib/admin'
+
+export const revalidate = 0
 
 export default async function CozinhaPage() {
-  const supabase = await createClient()
+  const [session, loja] = await Promise.all([
+    getAdminSession(),
+    getLojaUnica(),
+  ])
 
-  // 1. Validar autenticação
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
+  if (!session) {
     redirect('/login?returnUrl=/admin/cozinha')
   }
 
-  // 2. Validar cargo (bloquear CLIENTES)
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('cargo')
-    .eq('id', user.id)
-    .single()
-
-  if (perfil?.cargo === 'CLIENTE') {
+  if (session.cargo === 'CLIENTE') {
     return (
       <div className="p-8 text-center text-red-500">
         Acesso negado. Apenas funcionários.
       </div>
     )
   }
-
-  // 3. Pegar a única loja do sistema
-  const { data: loja } = await supabase
-    .from('lojas')
-    .select('id')
-    .limit(1)
-    .single()
 
   if (!loja) {
     return (
@@ -43,7 +31,9 @@ export default async function CozinhaPage() {
     )
   }
 
-  // 4. Buscar os pedidos ativos; pedidos online (DELIVERY/BALCAO) só entram na fila após pagamento aprovado
+  const supabase = await createClient()
+
+  // Buscar os pedidos ativos; pedidos online só entram na fila após pagamento aprovado
   const { data: pedidosBrutos } = await supabase
     .from('pedidos')
     .select(

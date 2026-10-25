@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -31,6 +31,7 @@ type Props = {
 }
 
 export function DashboardClient({ pedidos, periodoAtual, inicioAtual, fimAtual }: Props) {
+  const router = useRouter()
   const [periodo, setPeriodo] = useState(periodoAtual)
   const [dataInicio, setDataInicio] = useState(inicioAtual || '')
   const [dataFim, setDataFim] = useState(fimAtual || '')
@@ -38,7 +39,7 @@ export function DashboardClient({ pedidos, periodoAtual, inicioAtual, fimAtual }
   const handleMudancaPeriodo = (novoPeriodo: string) => {
     setPeriodo(novoPeriodo)
     if (novoPeriodo !== 'custom') {
-      window.location.href = `/admin/dashboard?periodo=${novoPeriodo}`
+      router.push(`/admin/dashboard?periodo=${novoPeriodo}`)
     }
   }
 
@@ -47,7 +48,7 @@ export function DashboardClient({ pedidos, periodoAtual, inicioAtual, fimAtual }
       alert('Por favor, preencha a data inicial e final.')
       return
     }
-    window.location.href = `/admin/dashboard?periodo=custom&inicio=${dataInicio}&fim=${dataFim}`
+    router.push(`/admin/dashboard?periodo=custom&inicio=${dataInicio}&fim=${dataFim}`)
   }
 
   // Processamento de dados
