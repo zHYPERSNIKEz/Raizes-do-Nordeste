@@ -88,3 +88,4 @@ export const getLojaUnica = cache(async () => {
   }
   return loja
 })
+

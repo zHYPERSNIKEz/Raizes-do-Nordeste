@@ -30,3 +30,4 @@ ON itens_pedido(produto_id);
 -- 6. Acelera a consulta de Clientes (/admin/clientes)
 CREATE INDEX IF NOT EXISTS idx_perfis_cargo 
 ON perfis(cargo, criado_em DESC);
+

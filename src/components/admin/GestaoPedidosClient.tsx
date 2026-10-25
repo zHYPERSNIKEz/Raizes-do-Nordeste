@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { atualizarStatusPedido, atualizarPagamentoPedido } from '@/app/(admin)/admin/pedidos/actions'
-import { Check, X, Clock, MapPin, Search, Eye, Filter } from 'lucide-react'
+import { Check, X, Clock, MapPin, Search, Eye, Filter, Radio } from 'lucide-react'
+import { toast } from 'sonner'
 
 // Componente para exibir um badge de status com cores variadas
 function StatusBadge({ status }: { status: string }) {
@@ -36,15 +37,27 @@ function ConsumoBadge({ tipo, mesa }: { tipo: string, mesa?: number }) {
 }
 
 export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosIniciais: any[], lojaId: string }) {
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [pedidos, setPedidos] = useState(pedidosIniciais)
   const [filtroStatus, setFiltroStatus] = useState<string>('TODOS')
   const [pedidoSelecionado, setPedidoSelecionado] = useState<any | null>(null)
+  const [realtimeConectado, setRealtimeConectado] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // SubscriÃ§Ã£o Realtime
+  useEffect(() => {
+    audioRef.current = new Audio('/sounds/bell.mp3')
+  }, [])
+
+  const tocarSino = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {})
+    }
+  }
+
+  // Subscrição Realtime
   useEffect(() => {
     const channel = supabase
-      .channel('admin-pedidos-caixa')
+      .channel(`admin-pedidos-${lojaId}`)
       .on(
         'postgres_changes',
         {
@@ -54,57 +67,80 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
           filter: `loja_id=eq.${lojaId}`
         },
         async (payload) => {
-          const newRecord = payload.new as any;
-          const oldRecord = payload.old as any;
+          const newRecord = payload.new as any
+          const oldRecord = payload.old as any
           
           if (payload.eventType === 'UPDATE') {
-            setPedidos(prev => prev.map(p => p.id === newRecord.id ? { ...p, ...newRecord } : p))
+            setPedidos(prev => prev.map(p => {
+              if (p.id === newRecord.id) {
+                return { ...p, ...newRecord, itens_pedido: p.itens_pedido }
+              }
+              return p
+            }))
             
             // Atualizar pedido selecionado se for o mesmo
             setPedidoSelecionado((atual: any) => {
-               if (atual && atual.id === newRecord.id) {
-                 return { ...atual, ...newRecord }
-               }
-               return atual
+              if (atual && atual.id === newRecord.id) {
+                return { ...atual, ...newRecord, itens_pedido: atual.itens_pedido }
+              }
+              return atual
             })
-          } else {
-            // Um INSERT ou DELETE. Como precisamos dos relacionamentos `itens_pedido`,
-            // recarregamos a pÃ¡gina de forma reativa ou refazemos o fetch localmente.
-            const newRecord = payload.new as any
-            
+
+            // Notifica se o pagamento foi aprovado em tempo real
+            if (!oldRecord?.pago && newRecord?.pago) {
+              tocarSino()
+              toast.success(`Pagamento Aprovado!`, {
+                description: `Pedido #${newRecord.numero_pedido || newRecord.id.split('-')[0]} - ${newRecord.cliente_nome}`,
+              })
+            }
+          } else if (payload.eventType === 'INSERT') {
             const { data } = await supabase
               .from('pedidos')
               .select(`
-                id, cliente_nome, telefone, tipo_consumo, mesa, status, criado_em, total, forma_pagamento, pago, endereco,
+                id, numero_pedido, cliente_nome, telefone, tipo_consumo, mesa, status, criado_em, total, forma_pagamento, pago, endereco,
                 itens_pedido ( quantidade, preco_unitario, observacao, produtos(nome) )
               `)
               .eq('id', newRecord.id)
               .single()
               
-            if (data && payload.eventType === 'INSERT') {
-              setPedidos(prev => [data, ...prev]) // Novo pedido no topo
-            } else if (payload.eventType === 'DELETE') {
-              const oldRecord = payload.old as any
-              setPedidos(prev => prev.filter(p => p.id !== oldRecord.id))
+            if (data) {
+              setPedidos(prev => {
+                if (prev.some(p => p.id === data.id)) return prev
+                return [data, ...prev]
+              })
+              tocarSino()
+              toast.info(`Novo Pedido Recebido!`, {
+                description: `#${data.numero_pedido || data.id.split('-')[0]} • ${data.cliente_nome} • R$ ${Number(data.total).toFixed(2).replace('.', ',')}`,
+              })
             }
+          } else if (payload.eventType === 'DELETE') {
+            const oldRec = payload.old as any
+            setPedidos(prev => prev.filter(p => p.id !== oldRec.id))
+            setPedidoSelecionado((atual: any) => (atual?.id === oldRec.id ? null : atual))
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setRealtimeConectado(true)
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          setRealtimeConectado(false)
+        }
+      })
 
     return () => {
       supabase.removeChannel(channel)
     }
   }, [supabase, lojaId])
 
-  // LÃ³gica de Filtros
+  // Lógica de Filtros
   const pedidosFiltrados = pedidos.filter(p => {
     if (filtroStatus === 'TODOS') return true
     if (filtroStatus === 'ATIVOS') return !['FINALIZADO', 'CANCELADO'].includes(p.status)
     return p.status === filtroStatus
   })
 
-  // FunÃ§Ãµes de Ação RÃ¡pida
+  // Funções de Ação Rápida
   const handleAtualizarStatus = async (id: string, novoStatus: string) => {
     await atualizarStatusPedido(id, novoStatus)
   }
@@ -118,12 +154,12 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
       
       {/* Lista de Pedidos (Tabela / Cards) */}
       <div className="flex-1">
-        {/* Filtros */}
         
-          {/* Filtros */}
-          <div className="mb-6">
+        {/* Barra de Filtros e Indicador de Tempo Real */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
             {/* Visualização Desktop (Botões) */}
-            <div className="hidden md:flex gap-2 overflow-x-auto pb-2">
+            <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
               {['ATIVOS', 'TODOS', 'NA_FILA', 'PREPARANDO', 'PRONTO', 'DESPACHADO', 'FINALIZADO', 'CANCELADO'].map(status => (
                 <button
                   key={status}
@@ -138,6 +174,13 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
                 </button>
               ))}
             </div>
+
+            {/* Badge de Tempo Real */}
+            <div className="flex items-center gap-2 self-start sm:self-auto text-xs px-3 py-1.5 rounded-full font-semibold border transition-all bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+              <span className={`w-2 h-2 rounded-full ${realtimeConectado ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              {realtimeConectado ? 'Tempo Real Ativo' : 'Conectando ao vivo...'}
+            </div>
+          </div>
 
             {/* Visualização Mobile (Dropdown Select Nativo) */}
             <div className="md:hidden">
