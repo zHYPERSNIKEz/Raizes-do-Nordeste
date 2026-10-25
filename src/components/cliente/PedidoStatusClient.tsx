@@ -60,6 +60,9 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
   const [erroMp, setErroMp] = useState<string | null>(null)
 
   // Estados do formulário transparente de Cartão
+  const [tipoCartao, setTipoCartao] = useState<'CREDITO' | 'DEBITO'>(
+    pedidoInicial.forma_pagamento === 'CARTAO_DEBITO' ? 'DEBITO' : 'CREDITO'
+  )
   const [cardNumber, setCardNumber] = useState('')
   const [cardName, setCardName] = useState(pedidoInicial.cliente_nome || '')
   const [cardExpiry, setCardExpiry] = useState('')
@@ -219,17 +222,28 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
   const handleSimularAprovacaoTeste = async () => {
     setSimulandoPagto(true)
     try {
+      const metodoFinal =
+        abaPagamento === 'PIX'
+          ? 'PIX'
+          : tipoCartao === 'DEBITO'
+            ? 'CARTAO_DEBITO'
+            : 'CARTAO_CREDITO'
+
       const res = await fetch('/api/mercadopago/pagamento', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pedidoId: pedido.id,
-          metodo: abaPagamento === 'PIX' ? 'PIX' : 'CARTAO_CREDITO',
+          metodo: metodoFinal,
         }),
       })
       const data = await res.json()
       if (data?.success && data?.pago) {
-        setPedido((prev: any) => ({ ...prev, pago: true }))
+        setPedido((prev: any) => ({
+          ...prev,
+          pago: true,
+          forma_pagamento: metodoFinal,
+        }))
         toast.success('Pagamento Aprovado!', {
           description: 'Seu pedido foi enviado para a fila da cozinha em tempo real.',
         })
@@ -411,29 +425,46 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
               </p>
             </div>
 
-            {/* Seletor para alternar entre Pix e Cartão */}
+            {/* Seletor para alternar entre Pix, Cartão de Crédito e Débito */}
             <div className="flex bg-muted p-1 rounded-xl shrink-0">
               <button
                 type="button"
                 onClick={() => setAbaPagamento('PIX')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   abaPagamento === 'PIX'
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <QrCode size={15} /> Pix
+                <QrCode size={14} /> Pix
               </button>
               <button
                 type="button"
-                onClick={() => setAbaPagamento('CARTAO')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                  abaPagamento === 'CARTAO'
+                onClick={() => {
+                  setAbaPagamento('CARTAO')
+                  setTipoCartao('CREDITO')
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  abaPagamento === 'CARTAO' && tipoCartao === 'CREDITO'
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <CreditCard size={15} /> Cartão
+                <CreditCard size={14} /> Crédito
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAbaPagamento('CARTAO')
+                  setTipoCartao('DEBITO')
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  abaPagamento === 'CARTAO' && tipoCartao === 'DEBITO'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <CreditCard size={14} /> Débito
               </button>
             </div>
           </div>
@@ -560,12 +591,43 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                   <div className="flex items-center gap-2">
                     <CreditCard size={20} className="text-brand" />
                     <span className="font-bold text-sm text-foreground">
-                      Dados do Cartão de Crédito ou Débito
+                      Dados do Cartão
                     </span>
                   </div>
                   <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
                     <Lock size={12} /> Criptografado
                   </span>
+                </div>
+
+                {/* Seletor entre Crédito e Débito */}
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground mb-1.5">
+                    Modalidade do Cartão
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-muted/60 rounded-xl border border-border/50">
+                    <button
+                      type="button"
+                      onClick={() => setTipoCartao('CREDITO')}
+                      className={`py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                        tipoCartao === 'CREDITO'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Cartão de Crédito
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTipoCartao('DEBITO')}
+                      className={`py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                        tipoCartao === 'DEBITO'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Cartão de Débito
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -628,25 +690,32 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                    Parcelamento
-                  </label>
-                  <select
-                    value={cardParcelas}
-                    onChange={(e) => setCardParcelas(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-                  >
-                    <option value="1">
-                      1x de R$ {Number(pedido.total).toFixed(2).replace('.', ',')} (Sem
-                      juros)
-                    </option>
-                    <option value="2">
-                      2x de R$ {(Number(pedido.total) / 2).toFixed(2).replace('.', ',')}{' '}
-                      (Sem juros)
-                    </option>
-                  </select>
-                </div>
+                {tipoCartao === 'CREDITO' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                      Parcelamento
+                    </label>
+                    <select
+                      value={cardParcelas}
+                      onChange={(e) => setCardParcelas(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                    >
+                      <option value="1">
+                        1x de R$ {Number(pedido.total).toFixed(2).replace('.', ',')} (Sem
+                        juros)
+                      </option>
+                      <option value="2">
+                        2x de R$ {(Number(pedido.total) / 2).toFixed(2).replace('.', ',')}{' '}
+                        (Sem juros)
+                      </option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-secondary/40 rounded-xl border border-border/50 text-xs text-muted-foreground flex items-center justify-between">
+                    <span>Modalidade selecionada: <strong className="text-foreground">Débito à vista</strong></span>
+                    <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">Sem juros</span>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
@@ -655,7 +724,9 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                 >
                   {simulandoPagto || loadingCartao
                     ? 'Processando pagamento...'
-                    : `Pagar R$ ${Number(pedido.total).toFixed(2).replace('.', ',')} com Cartão`}
+                    : tipoCartao === 'DEBITO'
+                      ? `Pagar R$ ${Number(pedido.total).toFixed(2).replace('.', ',')} no Débito`
+                      : `Pagar R$ ${Number(pedido.total).toFixed(2).replace('.', ',')} no Crédito`}
                 </Button>
               </form>
 

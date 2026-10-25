@@ -25,7 +25,7 @@ export function CheckoutForm({
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [tipoConsumo, setTipoConsumo] = useState('DELIVERY')
-  const [formaPagamento, setFormaPagamento] = useState<'PIX' | 'CARTAO_CREDITO'>('PIX')
+  const [formaPagamento, setFormaPagamento] = useState<'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO'>('PIX')
 
   // Endereços
   const [localEnderecos, setLocalEnderecos] = useState<any[]>(enderecosSalvos)
@@ -393,15 +393,47 @@ export function CheckoutForm({
                     <div className="flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-slate-800 text-sm">
-                          Cartão de Crédito ou Débito
+                          Cartão de Crédito
                         </span>
                         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">
-                          Checkout Pro
+                          Online
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 mt-1">
-                        Pague com segurança no ambiente do Mercado Pago e retorne
-                        automaticamente ao pedido.
+                        Pague à vista ou parcele diretamente pelo sistema com segurança.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormaPagamento('CARTAO_DEBITO')}
+                    className={`p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${
+                      formaPagamento === 'CARTAO_DEBITO'
+                        ? 'border-brand bg-orange-50'
+                        : 'border-slate-200 bg-white hover:border-brand/50'
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-lg shrink-0 ${
+                        formaPagamento === 'CARTAO_DEBITO'
+                          ? 'bg-brand text-white'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      <CreditCard size={22} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-slate-800 text-sm">
+                          Cartão de Débito
+                        </span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                          À vista
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Débito online imediato direto na sua conta bancária.
                       </p>
                     </div>
                   </button>
@@ -491,7 +523,9 @@ export function CheckoutForm({
               ? 'Processando...'
               : formaPagamento === 'PIX'
                 ? 'Gerar QR Code Pix'
-                : 'Pagar com Cartão (Mercado Pago)'}
+                : formaPagamento === 'CARTAO_DEBITO'
+                  ? 'Pagar com Cartão de Débito'
+                  : 'Pagar com Cartão de Crédito'}
           </Button>
 
           <Link
