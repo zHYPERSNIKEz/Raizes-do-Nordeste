@@ -32,7 +32,7 @@ export function CheckoutForm({
   const [enderecoSelecionadoId, setEnderecoSelecionadoId] = useState<string>(
     localEnderecos.length > 0 ? enderecosSalvos[0].id : 'NOVO'
   )
-  const [titulo, setTitulo] = useState('Novo Endereço')
+  const [titulo, setTitulo] = useState('')
   const maskPhone = (val: string) => {
     const v = val.replace(/\D/g, '')
     if (v.length <= 2) return v
@@ -56,7 +56,7 @@ export function CheckoutForm({
     }
     setIsSavingAddress(true)
     const novoId = crypto.randomUUID()
-    const novoEnd = { id: novoId, titulo, rua, numero, bairro, complemento, telefone }
+    const novoEnd = { id: novoId, titulo: titulo.trim() || 'Principal', rua, numero, bairro, complemento, telefone }
 
     const res = await adicionarEndereco(novoEnd)
     if (res?.success) {
@@ -99,7 +99,7 @@ export function CheckoutForm({
           setIsSubmitting(false)
           return
         }
-        enderecoFinal = { rua, numero, bairro, complemento, telefone }
+        enderecoFinal = { titulo: titulo.trim() || 'Principal', rua, numero, bairro, complemento, telefone }
       } else {
         const endSalvo = localEnderecos.find((e) => e.id === enderecoSelecionadoId)
         if (!endSalvo) {

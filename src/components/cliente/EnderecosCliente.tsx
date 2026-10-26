@@ -22,7 +22,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
   const [loading, setLoading] = useState(false)
 
   // Form states
-  const [titulo, setTitulo] = useState('Casa')
+  const [titulo, setTitulo] = useState('')
   const [rua, setRua] = useState('')
   const [numero, setNumero] = useState('')
   const [bairro, setBairro] = useState('')
@@ -34,7 +34,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
     
     const novoEndereco = {
       id: crypto.randomUUID(),
-      titulo,
+      titulo: titulo.trim() || 'Principal',
       rua,
       numero,
       bairro,
@@ -46,7 +46,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
       setEnderecos([...enderecos, novoEndereco])
       setIsModalOpen(false)
       // Limpa os campos
-      setTitulo('Casa')
+      setTitulo('')
       setRua('')
       setNumero('')
       setBairro('')
@@ -123,7 +123,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
               <form id="form-endereco" onSubmit={handleAdd} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Nome do Local (Ex: Casa, Trabalho)</label>
-                  <input type="text" required value={titulo} onChange={e => setTitulo(e.target.value)} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" />
+                  <input type="text" value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="Ex: Casa, Trabalho..." className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" />
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
