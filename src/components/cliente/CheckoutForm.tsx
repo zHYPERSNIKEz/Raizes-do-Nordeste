@@ -28,10 +28,13 @@ export function CheckoutForm({
   const [formaPagamento, setFormaPagamento] = useState<'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO'>('PIX')
 
   // Endereços
-  const [localEnderecos, setLocalEnderecos] = useState<any[]>(enderecosSalvos)
-  const [enderecoSelecionadoId, setEnderecoSelecionadoId] = useState<string>(
-    localEnderecos.length > 0 ? enderecosSalvos[0].id : 'NOVO'
-  )
+  const enderecosValidos = Array.isArray(enderecosSalvos) ? enderecosSalvos : []
+  const [localEnderecos, setLocalEnderecos] = useState<any[]>(enderecosValidos)
+  const [enderecoSelecionadoId, setEnderecoSelecionadoId] = useState<string>(() => {
+    return enderecosValidos.length > 0 && enderecosValidos[0]?.id
+      ? enderecosValidos[0].id
+      : 'NOVO'
+  })
   const [titulo, setTitulo] = useState('')
   const maskPhone = (val: string) => {
     const v = val.replace(/\D/g, '')
@@ -60,7 +63,7 @@ export function CheckoutForm({
 
     const res = await adicionarEndereco(novoEnd)
     if (res?.success) {
-      setLocalEnderecos([...localEnderecos, novoEnd])
+      setLocalEnderecos((prev) => [...prev, novoEnd])
       setEnderecoSelecionadoId(novoId)
       toast.success('Endereço salvo no seu perfil!')
     } else {

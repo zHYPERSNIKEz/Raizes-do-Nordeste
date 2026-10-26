@@ -57,6 +57,7 @@ export async function adicionarEndereco(novoEndereco: any) {
   
   if (error) return { error: 'Erro ao salvar.' }
   revalidatePath('/perfil')
+  revalidatePath('/checkout')
   return { success: true }
 }
 
@@ -74,5 +75,6 @@ export async function removerEndereco(idEndereco: string) {
   
   if (error) return { error: 'Erro ao remover.' }
   revalidatePath('/perfil')
+  revalidatePath('/checkout')
   return { success: true }
 }
