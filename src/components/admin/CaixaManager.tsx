@@ -114,6 +114,7 @@ export function CaixaManager({ lojaId, caixaAtual, pedidos, movimentacoes }: any
               <input 
                 type="number" 
                 step="0.01" 
+                min="0"
                 required
                 value={valorAbertura}
                 onChange={e => setValorAbertura(e.target.value)}
@@ -217,7 +218,7 @@ export function CaixaManager({ lojaId, caixaAtual, pedidos, movimentacoes }: any
                     <option value="SUPRIMENTO">Suprimento (Entrada)</option>
                   </select>
                   <input 
-                    type="number" step="0.01" required placeholder="Valor"
+                    type="number" step="0.01" min="0" required placeholder="Valor"
                     value={movimentacaoForm.valor} onChange={e => setMovimentacaoForm({...movimentacaoForm, valor: e.target.value})}
                     className="bg-slate-950 border border-slate-700 rounded-lg p-2 text-slate-300 text-sm w-24"
                   />
@@ -268,7 +269,7 @@ export function CaixaManager({ lojaId, caixaAtual, pedidos, movimentacoes }: any
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">R$</span>
                   <input 
-                    type="number" step="0.01" required
+                    type="number" step="0.01" min="0" required
                     value={valorReal} onChange={e => setValorReal(e.target.value)}
                     className="w-full bg-slate-950 border border-red-900/50 rounded-lg py-2 pl-9 pr-3 text-white focus:border-red-500"
                   />

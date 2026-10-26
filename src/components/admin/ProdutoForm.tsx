@@ -150,6 +150,7 @@ export function ProdutoForm({
               <input 
                 type="number" 
                 step="0.01"
+                min="0"
                 name="preco"
                 required
                 defaultValue={produto?.preco}
@@ -338,6 +339,7 @@ export function ProdutoForm({
               <input 
                 type="number" 
                 step="0.01"
+                min="0"
                 value={novoAddPreco}
                 onChange={e => setNovoAddPreco(e.target.value)}
                 placeholder="R$ 0,00"

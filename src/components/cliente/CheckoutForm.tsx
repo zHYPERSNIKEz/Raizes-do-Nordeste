@@ -243,6 +243,8 @@ export function CheckoutForm({
                           </label>
                           <input
                             type="text"
+                            inputMode="tel"
+                            maxLength={15}
                             required={enderecoSelecionadoId === 'NOVO'}
                             value={telefone}
                             onChange={(e) => setTelefone(maskPhone(e.target.value))}

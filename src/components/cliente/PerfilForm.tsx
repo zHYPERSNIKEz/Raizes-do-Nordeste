@@ -58,7 +58,7 @@ export function PerfilForm({ user, perfilDB }: PerfilFormProps) {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Telefone Principal (WhatsApp)</label>
-          <input type="text" name="telefone" value={telefone} onChange={e => setTelefone(maskPhone(e.target.value))} className="w-full md:w-1/2 p-2 border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
+          <input type="text" inputMode="tel" maxLength={15} name="telefone" value={telefone} onChange={e => setTelefone(maskPhone(e.target.value))} className="w-full md:w-1/2 p-2 border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="(00) 00000-0000" />
         </div>
 
         <div className="border-t border-slate-200 pt-6">

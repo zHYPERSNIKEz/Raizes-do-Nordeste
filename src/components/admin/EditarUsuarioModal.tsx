@@ -17,8 +17,15 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
   const [loading, setLoading] = useState(false)
   const [carregandoEmail, setCarregandoEmail] = useState(false)
   
+  const maskPhone = (val: string) => {
+    const v = val.replace(/\D/g, '')
+    if (v.length <= 2) return v
+    if (v.length <= 7) return `(${v.slice(0, 2)}) ${v.slice(2, 7)}`
+    return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7, 11)}`
+  }
+
   const [nome, setNome] = useState(usuario.nome || '')
-  const [telefone, setTelefone] = useState(usuario.telefone || '')
+  const [telefone, setTelefone] = useState(maskPhone(usuario.telefone || ''))
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
 
@@ -104,8 +111,10 @@ export function EditarUsuarioModal({ usuario }: { usuario: Usuario }) {
                   <label className="block text-sm font-medium text-slate-400 mb-1">Telefone / WhatsApp</label>
                   <input 
                     type="text" 
+                    inputMode="tel"
+                    maxLength={15}
                     value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
+                    onChange={e => setTelefone(maskPhone(e.target.value))}
                     placeholder="(11) 99999-9999"
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 focus:border-brand outline-none"
                   />

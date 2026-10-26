@@ -636,8 +636,10 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     required
                     placeholder="0000 0000 0000 0000"
+                    maxLength={19}
                     value={cardNumber}
                     onChange={(e) => setCardNumber(maskCardNumber(e.target.value))}
                     className="w-full p-3 rounded-xl border border-border bg-card text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand"
@@ -665,8 +667,10 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                     </label>
                     <input
                       type="text"
+                      inputMode="numeric"
                       required
                       placeholder="12/30"
+                      maxLength={5}
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(maskExpiry(e.target.value))}
                       className="w-full p-3 rounded-xl border border-border bg-card text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand"
@@ -678,6 +682,7 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                     </label>
                     <input
                       type="text"
+                      inputMode="numeric"
                       required
                       placeholder="123"
                       maxLength={4}
@@ -730,21 +735,8 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                 </Button>
               </form>
 
-              <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePagarComCartaoCheckoutPro}
-                  disabled={loadingCartao}
-                  className="text-xs font-semibold"
-                >
-                  <ExternalLink size={14} className="mr-1.5" />
-                  {loadingCartao
-                    ? 'Abrindo Mercado Pago...'
-                    : 'Ou abrir ambiente externo do Mercado Pago (Checkout Pro)'}
-                </Button>
-
-                {testMode && (
+              {testMode && (
+                <div className="flex justify-center mt-4">
                   <Button
                     type="button"
                     onClick={handleSimularAprovacaoTeste}
@@ -756,8 +748,8 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
                       ? 'Aprovando...'
                       : 'Aprovar Teste Direto (1 Clique)'}
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

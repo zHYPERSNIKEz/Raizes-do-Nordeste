@@ -187,6 +187,7 @@ export function ConfiguracoesForm({ loja }: { loja: any }) {
               <input 
                 type="number" 
                 step="0.01"
+                min="0"
                 name="taxa_entrega"
                 defaultValue={taxaEntrega}
                 required

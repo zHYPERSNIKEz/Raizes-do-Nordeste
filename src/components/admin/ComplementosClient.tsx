@@ -180,7 +180,7 @@ export function ComplementosClient({ grupos }: { grupos: any[] }) {
                     <input type="text" name="nome" placeholder="Ex: Baião de Dois, Macaxeira Frita" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />
                   </div>
                   <div className="w-32">
-                    <input type="number" step="0.01" name="preco" placeholder="R$ 0,00" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />
+                    <input type="number" step="0.01" min="0" name="preco" placeholder="R$ 0,00" required className="w-full bg-slate-900 border border-slate-800 rounded p-2 text-sm text-white" />
                   </div>
                   <div className="flex gap-1">
                     <Button type="submit" size="sm" className="bg-brand hover:bg-orange-600 px-3">Salvar</Button>
