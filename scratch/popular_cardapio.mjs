@@ -232,7 +232,7 @@ const NOVOS_PRODUTOS = [
     preco: 64.0,
     categoria: 'Carnes de Sol & Assados',
     imagem_url:
-      'https://images.unsplash.com/photo-1514944298352-f4d732142f74?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1547928576-a4a33237cbc3?auto=format&fit=crop&w=800&q=80',
     ingredientes_base: ['Hortelã', 'Coentro', 'Pimenta de Cheiro'],
     adicionais: [{ nome: 'Cuscuz Extra na Manteiga', preco: 8.0 }],
   },
