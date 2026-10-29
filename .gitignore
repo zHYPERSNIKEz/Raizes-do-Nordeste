@@ -40,5 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Pasta de testes E2E locais
+# Pasta de testes E2E locais e scripts temporários
 teste/
+scratch/
+*.bak
