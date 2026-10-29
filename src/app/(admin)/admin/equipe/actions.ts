@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -20,13 +20,16 @@ export async function criarFuncionario(formData: FormData) {
   const nome = formData.get('nome') as string
   const cargo = formData.get('cargo') as string
 
-  // Cria o usuǭrio no Supabase Auth
+  // Cria o usuário no Supabase Auth
   const { data: authData, error: authError } = await supabaseService.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
     user_metadata: {
       nome,
+      full_name: nome,
+      display_name: nome,
+      name: nome,
       cargo
     }
   })

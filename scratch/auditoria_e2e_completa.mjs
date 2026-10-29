@@ -106,6 +106,9 @@ async function garantirUsuario(u, lojaId) {
       email_confirm: true,
       user_metadata: {
         nome: u.nome,
+        full_name: u.nome,
+        display_name: u.nome,
+        name: u.nome,
         cargo: u.cargo,
         lgpd_consentimento: true,
         lgpd_consentimento_em: new Date().toISOString(),
@@ -118,6 +121,9 @@ async function garantirUsuario(u, lojaId) {
       email_confirm: true,
       user_metadata: {
         nome: u.nome,
+        full_name: u.nome,
+        display_name: u.nome,
+        name: u.nome,
         cargo: u.cargo,
         lgpd_consentimento: true,
         lgpd_consentimento_em: new Date().toISOString(),
@@ -569,3 +575,4 @@ run().catch((e) => {
   console.error('Erro fatal:', e)
   process.exit(1)
 })
+

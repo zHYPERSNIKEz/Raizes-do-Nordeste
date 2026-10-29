@@ -43,6 +43,9 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         nome: nome,
+        full_name: nome,
+        display_name: nome,
+        name: nome,
         lgpd_consentimento: true,
         lgpd_consentimento_em: new Date().toISOString(),
       }
