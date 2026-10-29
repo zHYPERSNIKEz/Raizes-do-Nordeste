@@ -85,7 +85,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
     setLoading(null)
 
     if (res.success) {
-      if (novoStatus === 'ENTREGUE') {
+      if (novoStatus === 'FINALIZADO' || novoStatus === 'ENTREGUE') {
         setPedidos(prev => prev.filter(p => p.id !== pedidoId))
         toast.success('Entrega finalizada com sucesso!')
       } else if (novoStatus === 'DESPACHADO') {
@@ -197,7 +197,7 @@ export function EntregadorPainelClient({ pedidosIniciais, lojaId }: { pedidosIni
           <Button 
             className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-12 text-lg"
             disabled={loading === pedido.id}
-            onClick={() => handleMudarStatus(pedido.id, 'ENTREGUE')}
+            onClick={() => handleMudarStatus(pedido.id, 'FINALIZADO')}
           >
             {loading === pedido.id ? <Loader2 className="animate-spin" /> : <><CheckCircle className="mr-2" /> Finalizar Entrega</>}
           </Button>

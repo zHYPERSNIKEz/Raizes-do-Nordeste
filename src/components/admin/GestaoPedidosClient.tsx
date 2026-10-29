@@ -136,7 +136,8 @@ export function GestaoPedidosClient({ pedidosIniciais, lojaId }: { pedidosInicia
   // Lógica de Filtros
   const pedidosFiltrados = pedidos.filter(p => {
     if (filtroStatus === 'TODOS') return true
-    if (filtroStatus === 'ATIVOS') return !['FINALIZADO', 'CANCELADO'].includes(p.status)
+    if (filtroStatus === 'ATIVOS') return !['FINALIZADO', 'ENTREGUE', 'CANCELADO'].includes(p.status)
+    if (filtroStatus === 'FINALIZADO') return ['FINALIZADO', 'ENTREGUE'].includes(p.status)
     return p.status === filtroStatus
   })
 

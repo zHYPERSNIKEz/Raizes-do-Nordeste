@@ -212,13 +212,23 @@ export function CozinhaKanban({
           </>
         )}
         {pedido.status === 'PRONTO' && (
-          <Button
-            variant="outline"
-            onClick={() => handleMudarStatus(pedido.id, 'FINALIZADO')}
-            className="col-span-2 border-slate-600 text-slate-300 hover:bg-slate-700"
-          >
-            Limpar (Entregue)
-          </Button>
+          pedido.tipo_consumo === 'DELIVERY' ? (
+            <Button
+              variant="outline"
+              onClick={() => handleMudarStatus(pedido.id, 'DESPACHADO')}
+              className="col-span-2 border-purple-600/60 text-purple-300 hover:bg-purple-900/40"
+            >
+              Despachar p/ Entregador
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => handleMudarStatus(pedido.id, 'FINALIZADO')}
+              className="col-span-2 border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              Limpar (Entregue)
+            </Button>
+          )
         )}
       </div>
     </div>

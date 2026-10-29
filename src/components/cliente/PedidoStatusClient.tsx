@@ -341,7 +341,9 @@ export function PedidoStatusClient({ pedidoInicial }: { pedidoInicial: any }) {
 
   const visibleCurrentIndex = visibleStages.findIndex((s) => s.id === pedido.status)
   const safeCurrentIndex =
-    pedido.status === 'FINALIZADO' ? visibleStages.length - 1 : visibleCurrentIndex
+    pedido.status === 'FINALIZADO' || pedido.status === 'ENTREGUE'
+      ? visibleStages.length - 1
+      : visibleCurrentIndex
 
   return (
     <div className="bg-card text-card-foreground p-6 md:p-10 rounded-2xl shadow-sm border border-border">

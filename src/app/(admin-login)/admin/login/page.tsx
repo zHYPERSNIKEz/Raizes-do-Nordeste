@@ -1,4 +1,4 @@
-﻿import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/admin/LoginForm'
 import { createClient } from '@/lib/supabase/server'
 
@@ -7,8 +7,23 @@ export default async function AdminLoginPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    // Se já estiver logado, redireciona pro admin (o layout dele já barra cliente)
-    redirect('/admin/dashboard')
+    const { data: perfil } = await supabase
+      .from('perfis')
+      .select('cargo')
+      .eq('id', user.id)
+      .single()
+
+    const cargo = perfil?.cargo?.trim().toUpperCase()
+
+    if (cargo === 'COZINHA') {
+      redirect('/admin/cozinha')
+    } else if (cargo === 'GARCOM') {
+      redirect('/garcom')
+    } else if (cargo === 'ENTREGADOR') {
+      redirect('/entregador')
+    } else if (cargo && cargo !== 'CLIENTE') {
+      redirect('/admin/dashboard')
+    }
   }
 
   return (

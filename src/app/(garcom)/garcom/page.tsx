@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -13,9 +13,18 @@ export default async function GarcomDashboard() {
 
   const { data: perfil } = await supabase
     .from('perfis')
-    .select('nome')
+    .select('nome, cargo')
     .eq('id', user.id)
     .single()
+
+  const cargo = perfil?.cargo?.trim().toUpperCase()
+  if (cargo !== 'GARCOM' && cargo !== 'ADMIN' && cargo !== 'GERENTE') {
+    return (
+      <div className="p-8 text-center text-red-500 font-bold mt-10">
+        Acesso restrito. Você não tem permissão de garçom.
+      </div>
+    )
+  }
 
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
 

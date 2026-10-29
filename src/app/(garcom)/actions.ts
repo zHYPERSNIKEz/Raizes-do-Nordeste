@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -13,12 +13,17 @@ export async function enviarPedidoCozinha(payload: any, items: any[]) {
   
   if (!items || items.length === 0) return { success: false, error: 'Carrinho vazio' }
 
-  // 1. Pega perfil do garçom para saber o nome
+  // 1. Pega perfil do garçom para saber o nome e validar o cargo
   const { data: perfil } = await supabase
     .from('perfis')
-    .select('nome')
+    .select('nome, cargo')
     .eq('id', user.id)
     .single()
+
+  const cargo = perfil?.cargo?.trim().toUpperCase()
+  if (cargo !== 'GARCOM' && cargo !== 'ADMIN' && cargo !== 'GERENTE') {
+    return { success: false, error: 'Sem permissão para lançar pedidos de salão' }
+  }
 
   // Como é apenas uma loja, pega a primeira
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
@@ -81,6 +86,17 @@ export async function fecharContaMesa(mesa: string, formaPagamento: string) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { success: false, error: 'Não autenticado' }
+
+  const { data: perfil } = await supabase
+    .from('perfis')
+    .select('cargo')
+    .eq('id', user.id)
+    .single()
+
+  const cargo = perfil?.cargo?.trim().toUpperCase()
+  if (cargo !== 'GARCOM' && cargo !== 'ADMIN' && cargo !== 'GERENTE') {
+    return { success: false, error: 'Sem permissão para fechar conta de mesa' }
+  }
 
   const { data: loja } = await supabase.from('lojas').select('id').limit(1).single()
   if (!loja) return { success: false, error: 'Loja não encontrada' }
