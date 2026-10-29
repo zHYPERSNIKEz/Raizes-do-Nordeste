@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { MapPin, Plus, Trash2, X } from 'lucide-react'
 import { adicionarEndereco, removerEndereco } from '@/app/(cliente)/perfil/actions'
@@ -20,6 +21,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
   const [enderecos, setEnderecos] = useState<Endereco[]>(enderecosIniciais)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [aceitouPrivacidade, setAceitouPrivacidade] = useState(false)
 
   // Form states
   const [titulo, setTitulo] = useState('')
@@ -30,6 +32,12 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
+    if (!aceitouPrivacidade) {
+      toast.error('Consentimento LGPD obrigatório', {
+        description: 'Marque a opção concordando com a Política de Privacidade para salvar o endereço.',
+      })
+      return
+    }
     setLoading(true)
     
     const novoEndereco = {
@@ -51,6 +59,7 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
       setNumero('')
       setBairro('')
       setComplemento('')
+      setAceitouPrivacidade(false)
       toast.success('Endereço adicionado!')
     } else {
       toast.error('Erro ao salvar endereço.')
@@ -74,7 +83,15 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-slate-800">Meus Endereços</h3>
-        <Button onClick={() => setIsModalOpen(true)} variant="outline" size="sm" className="gap-2">
+        <Button
+          onClick={() => {
+            setAceitouPrivacidade(false)
+            setIsModalOpen(true)
+          }}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
           <Plus size={16} /> Novo
         </Button>
       </div>
@@ -147,11 +164,32 @@ export function EnderecosCliente({ enderecosIniciais = [] }: { enderecosIniciais
                     <input type="text" value={complemento} onChange={e => setComplemento(e.target.value)} className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-brand focus:border-brand" placeholder="Ap, Casa 2..." />
                   </div>
                 </div>
+
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:border-brand/60 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={aceitouPrivacidade}
+                    onChange={(e) => setAceitouPrivacidade(e.target.checked)}
+                    required
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand accent-orange-600 shrink-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-slate-600 leading-relaxed">
+                    Autorizo o armazenamento deste endereço no meu perfil para entregas, conforme a{' '}
+                    <Link
+                      href="/privacidade"
+                      target="_blank"
+                      className="text-brand font-bold underline underline-offset-2 hover:text-orange-700"
+                    >
+                      Política de Privacidade (LGPD)
+                    </Link>
+                    .
+                  </span>
+                </label>
               </form>
             </div>
 
             <div className="p-4 border-t border-slate-100 bg-slate-50">
-              <Button type="submit" form="form-endereco" disabled={loading} className="w-full bg-primary hover:bg-orange-700 text-white h-12 text-lg font-bold">
+              <Button type="submit" form="form-endereco" disabled={loading || !aceitouPrivacidade} className="w-full bg-primary hover:bg-orange-700 text-white h-12 text-lg font-bold disabled:opacity-50">
                 {loading ? 'Salvando...' : 'Salvar Endereço'}
               </Button>
             </div>

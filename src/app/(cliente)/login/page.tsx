@@ -1,16 +1,25 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
+import { ShieldCheck } from 'lucide-react'
 import { login, signup } from './actions'
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true)
+  const [aceitouTermos, setAceitouTermos] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
     setError(null)
+
+    if (!isLogin && !aceitouTermos) {
+      setError('Você precisa ler e aceitar a Política de Privacidade (LGPD) para criar sua conta.')
+      return
+    }
+
+    setLoading(true)
     
     const result = isLogin ? await login(formData) : await signup(formData)
     
@@ -71,6 +80,31 @@ export default function LoginPage() {
             />
           </div>
 
+          {!isLogin && (
+            <label className="flex items-start gap-3 p-3.5 rounded-xl bg-background/60 border-2 border-border cursor-pointer hover:border-primary/50 transition-colors">
+              <input
+                type="checkbox"
+                name="aceitou_lgpd"
+                value="true"
+                checked={aceitouTermos}
+                onChange={(e) => setAceitouTermos(e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary accent-primary shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-muted-foreground leading-relaxed">
+                Li e concordo com a{' '}
+                <Link
+                  href="/privacidade"
+                  target="_blank"
+                  className="text-primary font-bold underline underline-offset-2 hover:text-primary/80"
+                >
+                  Política de Privacidade (LGPD)
+                </Link>{' '}
+                e autorizo o tratamento dos meus dados pessoais para criação de conta e processamento de pedidos.
+              </span>
+            </label>
+          )}
+
           {error && (
             <div className="p-4 bg-destructive/10 text-destructive text-sm font-bold rounded-xl border-2 border-destructive/20 text-center">
               {error}
@@ -79,7 +113,7 @@ export default function LoginPage() {
 
           <button 
             type="submit" 
-            disabled={loading}
+            disabled={loading || (!isLogin && !aceitouTermos)}
             className="mt-4 w-full bg-primary hover:scale-[1.02] active:scale-[0.98] text-primary-foreground font-display text-xl uppercase py-4 rounded-full transition-transform disabled:opacity-50 disabled:hover:scale-100 shadow-md"
           >
             {loading ? 'Aguarde...' : (isLogin ? 'Entrar' : 'Cadastrar')}
@@ -91,12 +125,21 @@ export default function LoginPage() {
           <button 
             onClick={() => {
               setIsLogin(!isLogin)
+              setAceitouTermos(false)
               setError(null)
             }}
             className="ml-2 text-primary font-bold hover:underline"
           >
             {isLogin ? 'Cadastre-se' : 'Faça login'}
           </button>
+        </div>
+
+        <div className="mt-6 pt-5 border-t border-border/60 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+          <span>Seus dados estão protegidos conforme a</span>
+          <Link href="/privacidade" className="text-primary font-semibold hover:underline">
+            LGPD
+          </Link>
         </div>
       </div>
     </main>

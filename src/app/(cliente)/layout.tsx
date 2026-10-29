@@ -1,5 +1,7 @@
 import { HeaderCliente } from '@/components/cliente/HeaderCliente'
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
+import { ShieldCheck } from 'lucide-react'
 
 export default async function ClienteLayout({
   children,
@@ -30,8 +32,19 @@ export default async function ClienteLayout({
         {children}
       </div>
       
-      <footer className="bg-card border-t border-border mt-auto py-8 text-center text-muted-foreground text-sm">
-        <p>© {new Date().getFullYear()} Raízes do Nordeste. Todos os direitos reservados.</p>
+      <footer className="bg-card border-t border-border mt-auto py-8 px-6 text-center text-muted-foreground text-sm">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© {new Date().getFullYear()} Raízes do Nordeste. Todos os direitos reservados.</p>
+          <div className="flex items-center gap-4 text-xs sm:text-sm">
+            <Link
+              href="/privacidade"
+              className="inline-flex items-center gap-1.5 text-foreground/80 hover:text-primary font-semibold underline underline-offset-4 transition-colors"
+            >
+              <ShieldCheck size={16} className="text-emerald-600 dark:text-emerald-400" />
+              Política de Privacidade e LGPD
+            </Link>
+          </div>
+        </div>
       </footer>
     </div>
   )

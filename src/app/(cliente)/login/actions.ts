@@ -29,15 +29,22 @@ export async function signup(formData: FormData) {
   const nome = formData.get('nome') as string
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const aceitouLgpd = formData.get('aceitou_lgpd') === 'true'
 
-  // Cria o usuário e manda o nome como "metadado". 
+  if (!aceitouLgpd) {
+    return { error: 'É necessário aceitar a Política de Privacidade (LGPD) para criar a conta.' }
+  }
+
+  // Cria o usuário e manda o nome e o registro de consentimento LGPD como "metadado". 
   // O Gatilho (Trigger) no banco de dados vai ler esse nome e criar o Perfil automaticamente.
   const { error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        nome: nome
+        nome: nome,
+        lgpd_consentimento: true,
+        lgpd_consentimento_em: new Date().toISOString(),
       }
     }
   })

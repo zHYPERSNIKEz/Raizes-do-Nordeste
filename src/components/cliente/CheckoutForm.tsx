@@ -51,6 +51,7 @@ export function CheckoutForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSavingAddress, setIsSavingAddress] = useState(false)
+  const [aceitouPrivacidade, setAceitouPrivacidade] = useState(false)
 
   const handleSalvarEndereco = async () => {
     if (!rua || !numero || !bairro || !telefone) {
@@ -89,6 +90,15 @@ export function CheckoutForm({
 
   const handleFinalizar = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!aceitouPrivacidade) {
+      toast.error('Consentimento LGPD obrigatório', {
+        description:
+          'Marque a opção concordando com a Política de Privacidade para finalizar o pedido.',
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     let enderecoFinal = null
@@ -518,11 +528,31 @@ export function CheckoutForm({
         </div>
 
         <div className="space-y-3">
+          <label className="flex items-start gap-2.5 p-3 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-brand/60 transition-colors">
+            <input
+              type="checkbox"
+              checked={aceitouPrivacidade}
+              onChange={(e) => setAceitouPrivacidade(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand accent-orange-600 shrink-0 cursor-pointer"
+            />
+            <span className="text-xs text-slate-600 leading-relaxed">
+              Concordo com a{' '}
+              <Link
+                href="/privacidade"
+                target="_blank"
+                className="text-brand font-bold underline underline-offset-2 hover:text-orange-700"
+              >
+                Política de Privacidade (LGPD)
+              </Link>{' '}
+              e autorizo o uso dos meus dados de contato e endereço para entrega e processamento deste pedido.
+            </span>
+          </label>
+
           <Button
             type="submit"
             form="checkout-form"
-            disabled={isSubmitting || !lojaAberta}
-            className="w-full bg-primary hover:bg-orange-700 h-14 text-lg font-bold text-white rounded-xl shadow-lg shadow-orange-500/20"
+            disabled={isSubmitting || !lojaAberta || !aceitouPrivacidade}
+            className="w-full bg-primary hover:bg-orange-700 h-14 text-lg font-bold text-white rounded-xl shadow-lg shadow-orange-500/20 disabled:opacity-50"
           >
             {isSubmitting
               ? 'Processando...'

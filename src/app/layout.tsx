@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner'
+import { CookieBanner } from '@/components/cliente/CookieBanner'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange
         >
           {children}
+          <CookieBanner />
           <Toaster position="top-center" richColors duration={1500} />
         </ThemeProvider>
       </body>
